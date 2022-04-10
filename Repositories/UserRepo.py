@@ -18,10 +18,13 @@ class UserRepo:
         except Error as e:
             print(e)
 
-    def getUser(self, username, password):
+    def GetUser(self, username, password):
 
         sql_statement = 'SELECT * from Users WHERE username=:UserName AND password=:Password'
-
-        self.cur.execute(sql_statement, {"UserName": username,
-                                         "Password": password})
+        try:
+            self.cur.execute(sql_statement, {"UserName": username,
+                                             "Password": password})
+        except Error as e:
+            print(e)
+            return False
         return self.cur.fetchone()
