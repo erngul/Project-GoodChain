@@ -8,7 +8,7 @@ class UserRepo:
         self.cur = self.conn.cursor()
 
     def CreateUser(self, userName, Password, publicKey, privateKey):
-        sql_statement = '''INSERT INTO Users (UserName, Password, PublicKey, PrivateKey) VALUES(?,?,?,?)'''
+        sql_statement = '''INSERT INTO User (UserName, Password, PublicKey, PrivateKey) VALUES(?,?,?,?)'''
         values_to_insert = (userName, Password, publicKey, privateKey)
         try:
             self.cur.execute(sql_statement, values_to_insert)
@@ -18,12 +18,22 @@ class UserRepo:
         except Error as e:
             print(e)
 
-    def GetUser(self, username, password):
+    def GetUserWithPassword(self, username, password):
 
-        sql_statement = 'SELECT * from Users WHERE username=:UserName AND password=:Password'
+        sql_statement = 'SELECT * from User WHERE username=:UserName AND password=:Password'
         try:
             self.cur.execute(sql_statement, {"UserName": username,
                                              "Password": password})
+        except Error as e:
+            print(e)
+            return False
+        return self.cur.fetchone()
+
+    def GetUserIdWithUserName(self, username):
+
+        sql_statement = 'SELECT Id from User WHERE username=:UserName'
+        try:
+            self.cur.execute(sql_statement, {"UserName": username})
         except Error as e:
             print(e)
             return False

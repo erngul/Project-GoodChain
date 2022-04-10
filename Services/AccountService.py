@@ -45,7 +45,7 @@ class AccountService:
             password = input('Please insert your password: ')
             digest = hashes.Hash(hashes.SHA256())
             digest.update(bytes(password, ' utf-8'))
-            user = self.userRepo.GetUser(userName, digest.finalize())
+            user = self.userRepo.GetUserWithPassword(userName, digest.finalize())
             if not user:
                 print('Wrong password or Username please try again.')
             else:
@@ -55,3 +55,9 @@ class AccountService:
                 self.pbk = user[4]
 
                 unCompleted = False
+
+    def PrintPublicKey(self):
+        print(self.pbk)
+
+    def PrintPrivateKey(self):
+        print(self.pvk)
