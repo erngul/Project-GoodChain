@@ -38,3 +38,7 @@ class TransactionService:
             poolRepo.CreatePool()
             poolId = poolRepo.GetUsablePoolId()
         self.transactionService.CreateTranscation(senderId, recieverUser[0], txValue, txFee, poolId)
+
+    def CalculateUserBalacne(self, senderId):
+        transactions = self.transactionService.GetUserTransactions(senderId)
+        print(transactions)

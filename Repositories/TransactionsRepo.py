@@ -19,4 +19,12 @@ class TransactionRepo:
             print(e)
 
 
-    def GetTransactions(self, userId):
+    def GetUserTransactions(self, userId):
+        sql_statement = 'SELECT * from Transactions WHERE Sender=:Sender OR Receiver=:Receiver'
+        try:
+            self.cur.execute(sql_statement, {"Sender": userId,
+                                             "Receiver": userId})
+        except Error as e:
+            print(e)
+            return False
+        return self.cur.fetchall()
