@@ -1,3 +1,4 @@
+import datetime
 from sqlite3.dbapi2 import Connection
 from sqlite3 import Error
 
@@ -9,22 +10,31 @@ class TransactionRepo:
 
 
     def CreateTranscation(self, senderId, recieverId, txValue, txFee, poolId):
-        sql_statement = '''INSERT INTO Transactions (Sender, Receiver, TxValue, TxFee, PoolId) VALUES(?,?,?,?,?)'''
-        values_to_insert = (senderId, recieverId, txValue, txFee, poolId)
+        sql_statement = '''INSERT INTO Transactions (Sender, Receiver, TxValue, TxFee, PoolId, Created) VALUES(?,?,?,?,?,?)'''
+        values_to_insert = (senderId, recieverId, txValue, txFee, poolId, datetime.datetime.now())
         try:
             self.cur.execute(sql_statement, values_to_insert)
             self.conn.commit()
-            print('Transaction has been sent.')
+            print('Transaction has been added.')
         except Error as e:
             print(e)
+
 
 
     def GetUserTransactions(self, userId):
-        sql_statement = 'SELECT * from Transactions WHERE Sender=:Sender OR Receiver=:Receiver'
+        sql_statement = 'SELECT * from Transactions WHERE Receiver=:Receiver'
         try:
-            self.cur.execute(sql_statement, {"Sender": userId,
-                                             "Receiver": userId})
+            self.cur.execute(sql_statement, {"Receiver": userId})
         except Error as e:
             print(e)
             return False
-        return self.cur.fetchall()
+        recieved = self.cur.fetchall()
+
+        sql_statement = 'SELECT * from Transactions WHERE Sender=:Sender'
+        try:
+            self.cur.execute(sql_statement, {"Sender": userId})
+        except Error as e:
+            print(e)
+            return False
+        send = self.cur.fetchall()
+        return recieved, send

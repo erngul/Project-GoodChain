@@ -3,8 +3,10 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 
+from Repositories.TransactionsRepo import TransactionRepo
 from Repositories.UserRepo import UserRepo
-class AccountService:
+
+class UserService:
     conn: Connection
     userId: int
     username: str
@@ -35,6 +37,9 @@ class AccountService:
                 digest.update(bytes(password, ' utf-8'))
 
                 self.userRepo.CreateUser(userName, digest.finalize(), public_key, private_key)
+                userId = self.userRepo.GetUserIdWithUserName(userName)[0]
+                transactionRepo = TransactionRepo(self.conn)
+                transactionRepo.CreateTranscation(1, userId, 50.00, 0, 0)
             else:
                 print("Passwords don't match please try again.")
 

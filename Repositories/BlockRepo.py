@@ -9,9 +9,9 @@ class BlockRepo:
         self.cur = self.conn.cursor()
 
 
-    def CreateTranscation(self, senderId, recieverId, txValue, txFee, poolId):
-        sql_statement = '''INSERT INTO Transactions (Sender, Receiver, TxValue, TxFee, PoolId, Created) VALUES(?,?,?,?,?,?)'''
-        values_to_insert = (senderId, recieverId, txValue, txFee, poolId, datetime.datetime)
+    def CreateBlock(self, hash):
+        sql_statement = '''INSERT INTO Block (Hash, Created) VALUES(?,?)'''
+        values_to_insert = (hash, datetime.datetime)
         try:
             self.cur.execute(sql_statement, values_to_insert)
             self.conn.commit()

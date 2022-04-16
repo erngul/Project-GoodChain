@@ -5,6 +5,8 @@ from sqlite3 import Error
 from sqlite3.dbapi2 import Connection
 
 from Repositories.DatabaseRepo import DatabaseRepo
+from Repositories.TransactionsRepo import TransactionRepo
+from Repositories.UserRepo import UserRepo
 
 
 class DatabaseService:
@@ -18,6 +20,11 @@ class DatabaseService:
             self.cur = self.conn.cursor()
             databaseRepo = DatabaseRepo(self.conn)
             databaseRepo.create_tables()
+            userRepo = UserRepo(self.conn)
+            transactionRepo = TransactionRepo(self.conn)
+            if not userRepo.GetUserIdWithUserName('FundingUser'):
+                userRepo.CreateFundingUser()
+                transactionRepo.CreateTranscation(1,1,999999999999999999, 0,0)
 
 
         except Error as e:
