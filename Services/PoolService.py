@@ -11,3 +11,6 @@ class PoolService:
         if not pool:
             self.poolRepo.CreatePool()
             print('New Pool Created.')
+
+    def createNewPoolHash:
+        return

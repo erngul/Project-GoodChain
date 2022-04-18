@@ -44,7 +44,7 @@ class UserRepo:
 
     def GetUserIdWithUserName(self, username):
 
-        sql_statement = 'SELECT Id from User WHERE username=:UserName'
+        sql_statement = 'SELECT Id, PublicKey from User WHERE username=:UserName'
         try:
             self.cur.execute(sql_statement, {"UserName": username})
         except Error as e:

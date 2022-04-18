@@ -16,25 +16,12 @@ class DatabaseRepo:
         except Error as e:
             print(e)
 
-        tb_create = '''create table Block
-                        (
-                                Id  INTEGER PRIMARY KEY,
-                                Hash TEXT,
-                                Created TEXT,
-                                Modified TEXT
-                        );
-                        '''
-        try:
-            self.cur.execute(tb_create)
-            self.conn.commit()
-        except Error as e:
-            print(e)
-
         tb_create = '''create table Pool
                     (
                         Id  INTEGER PRIMARY KEY,
-                        BlockId    integer
-                        references Block,
+                        PreviousPool    integer
+                        references Pool,
+                        PoolHash integer,
                         FullPool boolean,
                         Created TEXT,
                         Modified TEXT
@@ -45,6 +32,22 @@ class DatabaseRepo:
             self.conn.commit()
         except Error as e:
             print(e)
+
+        tb_create = '''create table Block
+                        (
+                                Id  INTEGER PRIMARY KEY,
+                                BlockHash TEXT,
+                                PoolId integer
+                                references Pool
+                                Created TEXT
+                        );
+                        '''
+        try:
+            self.cur.execute(tb_create)
+            self.conn.commit()
+        except Error as e:
+            print(e)
+
 
         tb_create = '''create table Transactions
                     (
@@ -57,6 +60,7 @@ class DatabaseRepo:
                             references User,
                         TxValue  decimal,
                         TxFee  decimal,
+                        TransactionSignature TEXT,
                         PoolId integer
                         constraint Transactions_Users_Id_fk
                             references Pool,
