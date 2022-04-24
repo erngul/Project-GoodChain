@@ -9,12 +9,15 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import *
 
+from Services.PoolService import PoolService
+
 class TransactionService:
     conn: Connection
 
-    def __init__(self, conn):
+    def __init__(self, conn, databaseService):
         self.conn = conn
         self.transactionService = TransactionRepo(self.conn)
+        self.databaseService = databaseService
 
 
     def CreateNewTransactions(self, senderId, pvk):
@@ -36,13 +39,12 @@ class TransactionService:
             print('The amount can only have decimal values please try again')
             return
         txFee = txValue * 0.05
-        poolRepo = PoolRepo(self.conn)
-        poolId = poolRepo.GetUsablePoolId()[0]
-        if not poolId:
-            poolRepo.CreatePool()
-            poolId = poolRepo.GetUsablePoolId()
+        poolService = PoolService(self.conn)
+        poolId = poolService.handlePool()
         signature = self.sign([recieverUser[1], txValue, txFee, poolId], pvk)
         self.transactionService.CreateTranscation(senderId, recieverUser[0], txValue, txFee, poolId, signature)
+        self.databaseService.hashDatabase()
+
 
     def CalculateUserBalacne(self, userId):
         recieved, send = self.transactionService.GetUserTransactions(userId)
@@ -65,3 +67,5 @@ class TransactionService:
             ),
             hashes.SHA256())
         return signature
+
+

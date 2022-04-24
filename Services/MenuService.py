@@ -12,10 +12,10 @@ class MenuService:
     accountService: UserService
 
     def __init__(self, databaseService):
-        databaseService = databaseService
+        self.databaseService = databaseService
         self.conn = databaseService.conn
-        self.accountService = UserService(self.conn)
-        self.transactionService = TransactionService(self.conn)
+        self.accountService = UserService(self.conn, databaseService)
+        self.transactionService = TransactionService(self.conn, databaseService)
 
     def publicMenu(self):
 

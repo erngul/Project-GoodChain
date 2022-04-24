@@ -8,6 +8,14 @@ class BlockRepo:
         self.conn = conn
         self.cur = self.conn.cursor()
 
+    def GetAllBlocks(self):
+        sql_statement = '''SELECT * FROM Block'''
+        try:
+            self.cur.execute(sql_statement)
+        except Error as e:
+            print(e)
+            return False
+        return self.cur.fetchall()
 
     def CreateBlock(self, hash):
         sql_statement = '''INSERT INTO Block (Hash, Created) VALUES(?,?)'''

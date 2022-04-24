@@ -8,6 +8,15 @@ class TransactionRepo:
         self.conn = conn
         self.cur = self.conn.cursor()
 
+    def GetAllTransactions(self):
+        sql_statement = '''SELECT * FROM Transactions'''
+        try:
+            self.cur.execute(sql_statement)
+        except Error as e:
+            print(e)
+            return False
+        return self.cur.fetchall()
+
 
     def CreateTranscation(self, senderId, recieverId, txValue, txFee, poolId, signature):
         sql_statement = '''INSERT INTO Transactions (Sender, Receiver, TxValue, TxFee, PoolId,TransactionSignature, Created) VALUES(?,?,?,?,?,?,?)'''
@@ -38,3 +47,13 @@ class TransactionRepo:
             return False
         send = self.cur.fetchall()
         return recieved, send
+
+
+    def updateFunderTransaction(self):
+        sql_statement = 'UPDATE Transactions Set TxValue = 999999999999999999 WHERE Id = 1'
+        try:
+            self.cur.execute(sql_statement)
+            self.conn.commit()
+            print('Funder Transaction has been updated.')
+        except Error as e:
+            print(e)

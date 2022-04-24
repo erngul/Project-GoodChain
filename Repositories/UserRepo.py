@@ -7,6 +7,17 @@ class UserRepo:
         self.conn = conn
         self.cur = self.conn.cursor()
 
+
+    def GetAllUsers(self):
+        sql_statement = '''SELECT * FROM User'''
+        try:
+            self.cur.execute(sql_statement)
+        except Error as e:
+            print(e)
+            return False
+        return self.cur.fetchall()
+
+
     def CreateUser(self, userName, Password, publicKey, privateKey):
         sql_statement = '''INSERT INTO User (UserName, Password, PublicKey, PrivateKey) VALUES(?,?,?,?)'''
         values_to_insert = (userName, Password, publicKey, privateKey)

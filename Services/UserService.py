@@ -5,6 +5,9 @@ from cryptography.hazmat.primitives import hashes
 
 from Repositories.TransactionsRepo import TransactionRepo
 from Repositories.UserRepo import UserRepo
+from Services.DatabaseService import DatabaseService
+from Services.TransactionService import TransactionService
+
 
 class UserService:
     conn: Connection
@@ -13,9 +16,10 @@ class UserService:
     pbk: str
     pvk: str
 
-    def __init__(self, conn):
+    def __init__(self, conn, databaseService):
         self.conn = conn
         self.userRepo = UserRepo(conn)
+        self.databaseService = databaseService
 
     def RegisterAccount(self):
         unCompleted = True
@@ -39,9 +43,13 @@ class UserService:
                 self.userRepo.CreateUser(userName, digest.finalize(), public_key, private_key)
                 userId = self.userRepo.GetUserIdWithUserName(userName)[0]
                 transactionRepo = TransactionRepo(self.conn)
-                transactionRepo.CreateTranscation(1, userId, 50.00, 0, 0)
+                transactionService = TransactionService(self.conn, self.databaseService)
+                signature = transactionService.sign([public_key, 50.00, 0, 0], private_key)
+                transactionRepo.CreateTranscation(1, userId, 50.00, 0, 0, signature)
             else:
                 print("Passwords don't match please try again.")
+        self.databaseService.hashDatabase()
+
 
     def SignIn(self):
         unCompleted = True
@@ -60,6 +68,7 @@ class UserService:
                 self.pbk = user[4]
 
                 unCompleted = False
+        self.databaseService.hashDatabase()
 
     def PrintPublicKey(self):
         print(self.pbk)

@@ -9,9 +9,19 @@ class PoolRepo:
         self.cur = self.conn.cursor()
 
 
+    def GetAllPools(self):
+        sql_statement = '''SELECT * FROM Pool'''
+        try:
+            self.cur.execute(sql_statement)
+        except Error as e:
+            print(e)
+            return False
+        return self.cur.fetchall()
+
+
     def CreatePool(self, BlockId = None, FullPool = 0):
-        sql_statement = '''INSERT INTO Pool (BlockId, FullPool, Created) VALUES(?,?,?)'''
-        values_to_insert = (BlockId, FullPool, str(datetime.now()))
+        sql_statement = '''INSERT INTO Pool (FullPool, Created) VALUES(?,?)'''
+        values_to_insert = (FullPool, str(datetime.now()))
         try:
             self.cur.execute(sql_statement, values_to_insert)
             self.conn.commit()
@@ -20,10 +30,30 @@ class PoolRepo:
             print(e)
 
     def GetUsablePoolId(self):
-        sql_statement = 'SELECT Id from Pool WHERE BlockId IS NULL AND FullPool = 0'
+        sql_statement = 'SELECT P.Id from Pool as P left OUTER JOIN Block B on P.Id = B.PoolId WHERE B.Id IS NULL AND P.FullPool = 0'
         try:
             self.cur.execute(sql_statement)
         except Error as e:
             print(e)
             return False
         return self.cur.fetchone()
+
+    def SetFullPool(self, poolId):
+        # sql_statement = '''UPDATE Pool set (FullPool=:fullPool) where Id=:id'''
+        # sql_statement = 'UPDATE Transactions Set TxValue = 999999999999999999 WHERE Id = 1'
+        #
+        try:
+            self.cur.execute('UPDATE Pool set FullPool=:fullPool where Id=:id', {"fullPool": 1, "id":poolId} )
+        except Error as e:
+            print(e)
+            return False
+        # values_to_insert = (BlockId, FullPool, str(datetime.now()))
+
+    def GetPoolTransactions(self, poolId):
+        sql_statement = 'SELECT * from Pool as P left join Transactions T on P.Id = T.PoolId WHERE P.Id = poolId'
+        try:
+            self.cur.execute(sql_statement)
+        except Error as e:
+            print(e)
+            return False
+        return self.cur.fetchall()

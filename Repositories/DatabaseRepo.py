@@ -9,18 +9,16 @@ class DatabaseRepo:
 
     def create_tables(self):
         # create client table if it does not exist
-        tb_create = '''CREATE TABLE User (Id INTEGER PRIMARY KEY, UserName TEXT NOT NULL UNIQUE,Password TEXT NOT NULL UNIQUE,PrivateKey TEXT NOT NULL UNIQUE, PublicKey TEXT NOT NULL UNIQUE)'''
+        tb_create = '''CREATE TABLE User (Id INTEGER PRIMARY KEY, UserName TEXT NOT NULL UNIQUE,Password TEXT NOT NULL UNIQUE,PrivateKey TEXT NOT NULL UNIQUE, PublicKey TEXT NOT NULL UNIQUE, LastLogin TEXT)'''
         try:
             self.cur.execute(tb_create)
             self.conn.commit()
         except Error as e:
-            print(e)
+            return
 
         tb_create = '''create table Pool
                     (
                         Id  INTEGER PRIMARY KEY,
-                        PreviousPool    integer
-                        references Pool,
                         PoolHash integer,
                         FullPool boolean,
                         Created TEXT,
@@ -31,14 +29,14 @@ class DatabaseRepo:
             self.cur.execute(tb_create)
             self.conn.commit()
         except Error as e:
-            print(e)
+            return
 
         tb_create = '''create table Block
                         (
                                 Id  INTEGER PRIMARY KEY,
                                 BlockHash TEXT,
                                 PoolId integer
-                                references Pool
+                                references Pool,
                                 Created TEXT
                         );
                         '''
@@ -46,7 +44,7 @@ class DatabaseRepo:
             self.cur.execute(tb_create)
             self.conn.commit()
         except Error as e:
-            print(e)
+            return
 
 
         tb_create = '''create table Transactions
@@ -71,4 +69,4 @@ class DatabaseRepo:
             self.cur.execute(tb_create)
             self.conn.commit()
         except Error as e:
-            print(e)
+            return

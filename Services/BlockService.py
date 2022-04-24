@@ -2,8 +2,8 @@ from hashlib import sha256
 
 class BlockService:
 
-    def mine(self, leading_zeros, poolId):
-        prefix = '0' * leading_zeros
+    def mine(self, poolId):
+        prefix = '0' * 4
         if self.previousBlock is not None:
             self.previousHash = self.previousBlock.CurrentHash
         for i in range(1000000):
