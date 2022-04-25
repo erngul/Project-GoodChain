@@ -11,9 +11,6 @@ if __name__ == "__main__":
     databaseService = DatabaseService()
     databaseService.create_connection()
 
-    poolService = PoolService(databaseService.conn)
-    poolService.handlePool()
-
     menu = MenuService(databaseService)
     menu.publicMenu()
 

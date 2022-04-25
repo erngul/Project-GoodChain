@@ -5,7 +5,6 @@ from cryptography.hazmat.primitives import hashes
 
 from Repositories.TransactionsRepo import TransactionRepo
 from Repositories.UserRepo import UserRepo
-from Services.DatabaseService import DatabaseService
 from Services.TransactionService import TransactionService
 
 

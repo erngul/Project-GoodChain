@@ -13,6 +13,8 @@ from Services.PoolService import PoolService
 import hashlib
 import os
 
+from Services.TransactionPoolService import TransactionPoolService
+
 
 class DatabaseService:
     conn: Connection
@@ -31,8 +33,8 @@ class DatabaseService:
             if not userRepo.GetUserIdWithUserName('FundingUser'):
                 userRepo.CreateFundingUser()
                 transactionRepo.CreateTranscation(1,1,999999999999999999, 0,0, 1)
-            poolService = PoolService(self.conn)
-            poolService.handlePool()
+            transactionPoolService = TransactionPoolService(self.conn)
+            transactionPoolService.handlePool()
 
 
 

@@ -1,8 +1,8 @@
-from hashlib import sha256
 
 from Repositories.BlockRepo import BlockRepo
 from Repositories.PoolRepo import PoolRepo
 from Services.TransactionService import TransactionService
+import hashlib
 
 
 class BlockService:
@@ -18,17 +18,20 @@ class BlockService:
         previousBlockHash = None
         if previousBlock is not False:
             previousBlockHash = previousBlock[1]
-        poolTransactions = self.poolRepo.GetPoolTransactions(poolId)
+        data = self.poolRepo.GetPoolTransactions(poolId)
         prefix = '0' * 4
         if previousBlock is not None:
             self.previousHash = previousBlock.CurrentHash
 
         for i in range(1000000):
             self.Nonce = i
-            digest = str(self.data) + str(i)
+            digest = str(data) + str(i)
             if previousBlockHash is not None:
                 digest += str(previousBlockHash)
             digest = sha256(digest)
             if digest.startswith(prefix):
                 self.CurrentHash = digest
                 return
+
+def sha256(message):
+    return hashlib.sha256(message.encode('UTF-8')).hexdigest()
