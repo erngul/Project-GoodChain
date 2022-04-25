@@ -1,6 +1,8 @@
 from consolemenu import ConsoleMenu, SelectionMenu
 from consolemenu.items import CommandItem, FunctionItem, SubmenuItem
 from sqlite3.dbapi2 import Connection
+
+from Services.BlockService import BlockService
 from Services.UserService import UserService
 from Services.DatabaseService import DatabaseService
 from Services.TransactionService import TransactionService
@@ -16,6 +18,7 @@ class MenuService:
         self.conn = databaseService.conn
         self.accountService = UserService(self.conn, databaseService)
         self.transactionService = TransactionService(self.conn, databaseService)
+        self.blockService = BlockService(self.conn, databaseService)
 
     def publicMenu(self):
 

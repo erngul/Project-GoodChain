@@ -62,6 +62,7 @@ class DatabaseRepo:
                         PoolId integer
                         constraint Transactions_Users_Id_fk
                             references Pool,
+                        FalseTransaction boolean,
                         Created TEXT,
                         Modified TEXT
                     );'''

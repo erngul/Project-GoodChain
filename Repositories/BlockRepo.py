@@ -18,7 +18,7 @@ class BlockRepo:
         return self.cur.fetchall()
 
     def CreateBlock(self, hash):
-        sql_statement = '''INSERT INTO Block (Hash, Created) VALUES(?,?)'''
+        sql_statement = '''INSERT INTO Block (BlockHash, Created) VALUES(?,?)'''
         values_to_insert = (hash, datetime.datetime)
         try:
             self.cur.execute(sql_statement, values_to_insert)
@@ -26,3 +26,12 @@ class BlockRepo:
             print('Transaction has been added.')
         except Error as e:
             print(e)
+
+    def GetNewestBlock(self):
+        sql_statement = '''SELECT * FROM Block order by 1 desc limit 1'''
+        try:
+            self.cur.execute(sql_statement)
+        except Error as e:
+            print(e)
+            return False
+        return self.cur.fetchall()
