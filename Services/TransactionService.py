@@ -77,7 +77,7 @@ class TransactionService:
         if self.verify([recieverUser[1], transaction[3], transaction[4], transaction[6]],transaction[5], senderUser[1]) is False:
             falseTransaction = True
         if falseTransaction:
-            # make transaction value and fee 0 and also flag
+        # make transaction value and fee 0 and also flag
         return falseTransaction
     def sign(self, transaction, private):
         private_key = load_pem_private_key(private, password=None)
