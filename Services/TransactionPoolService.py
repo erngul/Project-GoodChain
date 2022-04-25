@@ -1,3 +1,5 @@
+import hashlib
+
 from Repositories.PoolRepo import PoolRepo
 from Repositories.TransactionsRepo import TransactionRepo
 from Repositories.UserRepo import UserRepo
@@ -16,11 +18,11 @@ class TransactionPoolService:
         self.transactionRepo = TransactionRepo(conn)
         self.userRepo = UserRepo(conn)
     def handlePool(self):
-        pool = self.poolRepo.GetUsablePoolId()
-        if not pool:
+        poolId = self.poolRepo.GetUsablePoolId()
+        if not poolId:
             self.poolRepo.CreatePool()
             print('New Pool Created.')
-        poolId = self.poolRepo.GetUsablePoolId()
+            poolId = self.poolRepo.GetUsablePoolId()
         poolId =self.checkPool(poolId[0])
         return poolId
 
@@ -76,3 +78,8 @@ class TransactionPoolService:
             return True
         except:
             return False
+
+    def createNewPoolHash(self, poolId):
+        poolTransaction = self.poolRepo.GetPoolTransactions(poolId)
+        self.poolRepo.UpdatePoolHash(poolId, str(hashlib.sha256(bytes(str(poolTransaction), 'utf-8')).hexdigest()))
+        return False

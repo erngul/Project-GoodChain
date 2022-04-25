@@ -39,21 +39,28 @@ class PoolRepo:
         return self.cur.fetchone()
 
     def SetFullPool(self, poolId):
-        # sql_statement = '''UPDATE Pool set (FullPool=:fullPool) where Id=:id'''
-        # sql_statement = 'UPDATE Transactions Set TxValue = 999999999999999999 WHERE Id = 1'
-        #
         try:
-            self.cur.execute('UPDATE Pool set FullPool=:fullPool where Id=:id', {"fullPool": 1, "id":poolId} )
+            self.cur.execute('UPDATE Pool set FullPool=:fullPool, Modified=:modified where Id=:id', {"fullPool": 1, "id":poolId, "modified":str(datetime.now())} )
+            self.conn.commit()
         except Error as e:
             print(e)
             return False
         # values_to_insert = (BlockId, FullPool, str(datetime.now()))
 
     def GetPoolTransactions(self, poolId):
-        sql_statement = 'SELECT * from Pool as P left join Transactions T on P.Id = T.PoolId WHERE P.Id = poolId'
+        sql_statement = '''SELECT * from Pool as P left join Transactions T on P.Id = T.PoolId WHERE P.Id = poolId'''
         try:
             self.cur.execute(sql_statement)
         except Error as e:
             print(e)
             return False
         return self.cur.fetchall()
+
+
+    def UpdatePoolHash(self, poolId, poolHash):
+        try:
+            self.cur.execute('UPDATE Pool set PoolHash=:poolHash, Modified=:modified where Id=:id', {"poolHash": poolHash, "id":poolId, "modified":str(datetime.now())} )
+            self.conn.commit()
+        except Error as e:
+            print(e)
+            return False

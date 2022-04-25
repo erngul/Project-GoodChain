@@ -13,6 +13,9 @@ class BlockService:
         self.blockRepo = BlockRepo(self.conn)
         self.poolRepo = PoolRepo(self.conn)
 
+
+    # def selectPool
+
     def mine(self, poolId):
         previousBlock = self.blockRepo.GetNewestBlock()
         previousBlockHash = None

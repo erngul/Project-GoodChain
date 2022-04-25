@@ -21,6 +21,7 @@ class DatabaseRepo:
                         Id  INTEGER PRIMARY KEY,
                         PoolHash integer,
                         FullPool boolean,
+                        FalsePool boolean,
                         Created TEXT,
                         Modified TEXT
 
@@ -37,6 +38,9 @@ class DatabaseRepo:
                                 BlockHash TEXT,
                                 PoolId integer
                                 references Pool,
+                                MindedUser
+                                referencing User,
+                                validated
                                 Created TEXT
                         );
                         '''

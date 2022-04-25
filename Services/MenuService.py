@@ -6,6 +6,7 @@ from Services.BlockService import BlockService
 from Services.UserService import UserService
 from Services.DatabaseService import DatabaseService
 from Services.TransactionService import TransactionService
+from Services.TransactionPoolService import TransactionPoolService
 
 
 class MenuService:
@@ -19,6 +20,7 @@ class MenuService:
         self.accountService = UserService(self.conn, databaseService)
         self.transactionService = TransactionService(self.conn, databaseService)
         self.blockService = BlockService(self.conn, databaseService)
+        self.transactionPoolService = TransactionPoolService(self.conn)
 
     def publicMenu(self):
 
@@ -42,7 +44,7 @@ class MenuService:
         ctp_item = FunctionItem("Check the Pool", self.accountService.SignIn)
         cancel_item = FunctionItem("Cancel a transaction", self.accountService.SignIn)
         mine_item = FunctionItem("Mine a Block", self.accountService.SignIn)
-        account_balance = FunctionItem("See account balance", self.transactionService.CalculateUserBalacne, [self.accountService.userId])
+        account_balance = FunctionItem("See account balance", self.transactionPoolService.CalculateUserBalacne, [self.accountService.userId])
         public_key = FunctionItem("see public Key", self.accountService.PrintPublicKey)
         private_key = FunctionItem("see private Key", self.accountService.PrintPrivateKey)
         menu.append_item(transfer_item)

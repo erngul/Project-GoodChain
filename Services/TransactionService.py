@@ -25,7 +25,7 @@ class TransactionService:
     def CreateNewTransactions(self, senderId, pvk):
         global recieverUser
         recieverNotFound = True
-        userBalance = self.CalculateUserBalacne(senderId)
+        userBalance = self.transactionPoolService.CalculateUserBalacne(senderId)
         while recieverNotFound:
             reciever = input('Who do you want to send the money(Type UserName): ')
 
@@ -51,6 +51,7 @@ class TransactionService:
         poolId = self.transactionPoolService.handlePool()
         signature = self.sign([recieverUser[1], txValue, txFee, poolId], pvk)
         self.transactionService.CreateTranscation(senderId, recieverUser[0], txValue, txFee, poolId, signature)
+        self.transactionPoolService.createNewPoolHash(poolId)
         self.databaseService.hashDatabase()
 
 
