@@ -56,6 +56,14 @@ class PoolRepo:
             return False
         return self.cur.fetchall()
 
+    def GetPoolTransactionFees(self, poolId):
+        sql_statement = '''SELECT count(TxFee) from Pool as P left join Transactions T on P.Id = T.PoolId WHERE P.Id = poolId'''
+        try:
+            self.cur.execute(sql_statement)
+        except Error as e:
+            print(e)
+            return False
+        return self.cur.fetchone()
 
     def UpdatePoolHash(self, poolId, poolHash):
         try:
@@ -64,3 +72,14 @@ class PoolRepo:
         except Error as e:
             print(e)
             return False
+
+    def getUnminedBlocks(self):
+        sql_statement = '''SELECT P.Id from Pool as P LEFT JOIN Block B on P.Id = B.PoolId and FullPool = 1
+EXCEPT
+SELECT P.Id from Block as B LEFT JOIN Pool P on P.Id = B.PoolId and FullPool = 1'''
+        try:
+            self.cur.execute(sql_statement)
+        except Error as e:
+            print(e)
+            return False
+        return self.cur.fetchall()

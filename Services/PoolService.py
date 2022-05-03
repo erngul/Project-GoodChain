@@ -23,3 +23,19 @@ class PoolService:
             if falseTransaction:
                 falseTransactions.append(t)
         # if len(falseTransactions) != 0:
+
+    def checkUnMinedPools(self):
+        unMinedBlocks = self.poolRepo.getUnminedBlocks()
+        pools = []
+        for umb in unMinedBlocks:
+            print(f'pool number: {umb[0]} has {self.poolRepo.GetPoolTransactionFees(int(umb[0]))[0]} mine fees.')
+            pools.append(int(umb[0]))
+        selectedNumber = None
+        while selectedNumber is None:
+            inputNumber = input('please select a pool: ')
+            print(pools)
+            if int(inputNumber) in pools:
+                selectedNumber = int(inputNumber)
+                return selectedNumber
+            else:
+                print('please try again te selected number is not inside the pool.')

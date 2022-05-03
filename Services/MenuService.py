@@ -43,7 +43,7 @@ class MenuService:
         etb_item = FunctionItem("Explore the Chain", self.accountService.SignIn)
         ctp_item = FunctionItem("Check the Pool", self.accountService.SignIn)
         cancel_item = FunctionItem("Cancel a transaction", self.accountService.SignIn)
-        mine_item = FunctionItem("Mine a Block", self.accountService.SignIn)
+        mine_item = FunctionItem("Mine a Block", self.blockService.mine, [self.accountService.userId])
         account_balance = FunctionItem("See account balance", self.transactionPoolService.CalculateUserBalacne, [self.accountService.userId])
         public_key = FunctionItem("see public Key", self.accountService.PrintPublicKey)
         private_key = FunctionItem("see private Key", self.accountService.PrintPrivateKey)

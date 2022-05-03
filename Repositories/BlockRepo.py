@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, date
 from sqlite3.dbapi2 import Connection
 from sqlite3 import Error
 
@@ -17,13 +17,13 @@ class BlockRepo:
             return False
         return self.cur.fetchall()
 
-    def CreateBlock(self, hash):
-        sql_statement = '''INSERT INTO Block (BlockHash, Created) VALUES(?,?)'''
-        values_to_insert = (hash, datetime.datetime)
+    def CreateBlock(self, hash, minerId, poolId):
+        sql_statement = '''INSERT INTO Block (BlockHash,MindedUserId, PoolId, Created) VALUES(?,?,?,?)'''
+        values_to_insert = (hash,minerId,poolId, str(datetime.now()))
         try:
             self.cur.execute(sql_statement, values_to_insert)
             self.conn.commit()
-            print('Transaction has been added.')
+            print('Block has been added.')
         except Error as e:
             print(e)
 
@@ -34,4 +34,4 @@ class BlockRepo:
         except Error as e:
             print(e)
             return False
-        return self.cur.fetchall()
+        return self.cur.fetchone()

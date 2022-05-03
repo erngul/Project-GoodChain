@@ -38,9 +38,14 @@ class DatabaseRepo:
                                 BlockHash TEXT,
                                 PoolId integer
                                 references Pool,
-                                MindedUser
+                                MindedUserId
                                 referencing User,
-                                validated
+                                validatedUserId1
+                                referencing User,
+                                validatedUserId2
+                                referencing User,
+                                validatedUserId3
+                                referencing User,
                                 Created TEXT
                         );
                         '''
