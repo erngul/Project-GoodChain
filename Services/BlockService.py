@@ -20,6 +20,8 @@ class BlockService:
 
     def mine(self, minerId):
         poolId = self.poolService.checkUnMinedPools()
+        falseTransactions = self.poolService.checkPoolTransactions(poolId)
+        if
         previousBlock = self.blockRepo.GetNewestBlock()
         previousBlockHash = None
         if previousBlock is not None:

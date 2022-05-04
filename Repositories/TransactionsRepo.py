@@ -57,3 +57,14 @@ class TransactionRepo:
             print('Funder Transaction has been updated.')
         except Error as e:
             print(e)
+
+
+    def editFalseTransaction(self, transactionId):
+        sql_statement = f'UPDATE Transactions Set TxFee = 0, TxValue = 0, FalseTransaction = 1 WHERE Id = '+ transactionId
+        try:
+            self.cur.execute(sql_statement)
+            self.conn.commit()
+            print('FalseTransaction has been updated.')
+        except Error as e:
+            print(e)
+

@@ -46,7 +46,9 @@ class TransactionPoolService:
         if self.verify([recieverUser[1], transaction[3], transaction[4], transaction[6]],transaction[5], senderUser[1]) is False:
             falseTransaction = True
         if falseTransaction:
-            print('false transaction')
+            self.transactionRepo.editFalseTransaction(transaction[0])
+        if transaction[7] == 1:
+            falseTransaction = True
         # make transaction value and fee 0 and also flag
         return falseTransaction
 

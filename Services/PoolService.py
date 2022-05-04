@@ -22,6 +22,7 @@ class PoolService:
             falseTransaction =  self.transactionPoolService.checkFalseTransaction(t)
             if falseTransaction:
                 falseTransactions.append(t)
+        return falseTransactions
         # if len(falseTransactions) != 0:
 
     def checkUnMinedPools(self):
@@ -34,8 +35,13 @@ class PoolService:
         while selectedNumber is None:
             inputNumber = input('please select a pool: ')
             print(pools)
-            if int(inputNumber) in pools:
-                selectedNumber = int(inputNumber)
-                return selectedNumber
-            else:
-                print('please try again te selected number is not inside the pool.')
+            try:
+                if int(inputNumber) in pools:
+                    selectedNumber = int(inputNumber)
+
+                    return selectedNumber
+                else:
+                    print('please try again te selected number is not inside the pool.')
+            except:
+                print('You can only use numbers.')
+

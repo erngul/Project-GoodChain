@@ -66,6 +66,7 @@ class UserService:
                 self.pvk = user[3]
                 self.pbk = user[4]
 
+
                 unCompleted = False
         self.databaseService.hashDatabase()
 
