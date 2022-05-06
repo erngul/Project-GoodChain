@@ -19,6 +19,7 @@ class UserService:
         self.conn = conn
         self.userRepo = UserRepo(conn)
         self.databaseService = databaseService
+        self.transactionService = TransactionService(self.conn, self.databaseService)
 
     def RegisterAccount(self):
         unCompleted = True
@@ -42,8 +43,8 @@ class UserService:
                 self.userRepo.CreateUser(userName, digest.finalize(), public_key, private_key)
                 userId = self.userRepo.GetUserIdWithUserName(userName)[0]
                 transactionRepo = TransactionRepo(self.conn)
-                transactionService = TransactionService(self.conn, self.databaseService)
-                signature = transactionService.sign([public_key, 50.00, 0, 0], private_key)
+
+                signature = self.transactionService.sign([public_key, 50.00, 0, 0], private_key)
                 transactionRepo.CreateTranscation(1, userId, 50.00, 0, 0, signature)
             else:
                 print("Passwords don't match please try again.")
@@ -65,8 +66,7 @@ class UserService:
                 self.username = user[1]
                 self.pvk = user[3]
                 self.pbk = user[4]
-
-
+                self.transactionService.checkFalseTransactions(self.userId)
                 unCompleted = False
         self.databaseService.hashDatabase()
 

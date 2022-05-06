@@ -5,6 +5,7 @@ from Services.PoolService import PoolService
 from Services.TransactionService import TransactionService
 import hashlib
 import time
+from datetime import datetime, timedelta
 
 class BlockService:
     def __init__(self,conn, databaseService):
@@ -21,13 +22,17 @@ class BlockService:
     def mine(self, minerId):
         poolId = self.poolService.checkUnMinedPools()
         falseTransactions = self.poolService.checkPoolTransactions(poolId)
-        if
+        # if
         previousBlock = self.blockRepo.GetNewestBlock()
+        blockDate = datetime.strptime(previousBlock[7], '%Y-%m-%d %h:%M:%s')
+        if(blockDate > (datetime.now() - timedelta(minutes=3))):
+            print(f'The last block has been mined less than 3 minutes before, please wait till you can mine again.')
+            return
         previousBlockHash = None
         if previousBlock is not None:
             previousBlockHash = previousBlock[1]
         data = self.poolRepo.GetPoolTransactions(poolId)
-        prefix = '0' * 4
+        prefix = '0' * 2
         start = time.time()
         if previousBlock is not None:
             self.previousHash = previousBlock.CurrentHash

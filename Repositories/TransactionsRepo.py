@@ -60,7 +60,16 @@ class TransactionRepo:
 
 
     def editFalseTransaction(self, transactionId):
-        sql_statement = f'UPDATE Transactions Set TxFee = 0, TxValue = 0, FalseTransaction = 1 WHERE Id = '+ transactionId
+        sql_statement = f'UPDATE Transactions Set TxFee = 0, TxValue = 0, FalseTransaction = 1 WHERE Id = {transactionId}'
+        try:
+            self.cur.execute(sql_statement)
+            self.conn.commit()
+            print('FalseTransaction has been set to 0.')
+        except Error as e:
+            print(e)
+
+    def setFalseTransaction(self, transactionId):
+        sql_statement = f'UPDATE Transactions Set FalseTransaction = 1 WHERE Id = {transactionId}'
         try:
             self.cur.execute(sql_statement)
             self.conn.commit()
@@ -68,3 +77,12 @@ class TransactionRepo:
         except Error as e:
             print(e)
 
+
+    def GetFalseTransactionsByUserId(self, userId):
+        sql_statement = f'''SELECT * FROM Transactions WHERE FalseTransaction = 1 AND Sender = {userId} and TxFee != 0 and TxValue != 0'''
+        try:
+            self.cur.execute(sql_statement)
+        except Error as e:
+            print(e)
+            return False
+        return self.cur.fetchall()
