@@ -22,8 +22,10 @@ class BlockService:
     def mine(self, minerId):
         poolId = self.poolService.checkUnMinedPools()
         falseTransactions = self.poolService.checkPoolTransactions(poolId)
-        # if
+        if len(falseTransactions)> 5:
+            print(f'There are {len(falseTransactions)} and you can only have 5 false transactions to continue mining.')
         previousBlock = self.blockRepo.GetNewestBlock()
+        # hier verder gaan.
         blockDate = datetime.strptime(previousBlock[7], '%Y-%m-%d %h:%M:%s')
         if(blockDate > (datetime.now() - timedelta(minutes=3))):
             print(f'The last block has been mined less than 3 minutes before, please wait till you can mine again.')
@@ -49,7 +51,7 @@ class BlockService:
                 timeCount = end - start
                 if(timeCount < 20):
                     time.sleep(20-timeCount)
-                self.blockRepo.CreateBlock(currentHash, minerId, poolId)
+                self.blockRepo.CreateBlock(currentHash, self.Nonce, minerId, poolId)
                 return
 
 def sha256(message):

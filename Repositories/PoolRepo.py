@@ -48,7 +48,7 @@ class PoolRepo:
         # values_to_insert = (BlockId, FullPool, str(datetime.now()))
 
     def GetPoolTransactions(self, poolId):
-        sql_statement = '''SELECT * from Pool as P left join Transactions T on P.Id = T.PoolId WHERE P.Id = poolId'''
+        sql_statement = f'''SELECT T.* from Pool as P left join Transactions T on P.Id = T.PoolId WHERE P.Id = {poolId} and T.FalseTransaction = 0'''
         try:
             self.cur.execute(sql_statement)
         except Error as e:
@@ -57,7 +57,7 @@ class PoolRepo:
         return self.cur.fetchall()
 
     def GetPoolTransactionFees(self, poolId):
-        sql_statement = '''SELECT count(TxFee) from Pool as P left join Transactions T on P.Id = T.PoolId WHERE P.Id = poolId'''
+        sql_statement = f'''SELECT count(TxFee) from Pool as P left join Transactions T on P.Id = T.PoolId WHERE P.Id = {poolId}'''
         try:
             self.cur.execute(sql_statement)
         except Error as e:

@@ -3,6 +3,7 @@ from consolemenu.items import CommandItem, FunctionItem, SubmenuItem
 from sqlite3.dbapi2 import Connection
 
 from Services.BlockService import BlockService
+from Services.PoolService import PoolService
 from Services.UserService import UserService
 from Services.DatabaseService import DatabaseService
 from Services.TransactionService import TransactionService
@@ -21,6 +22,7 @@ class MenuService:
         self.transactionService = TransactionService(self.conn, databaseService)
         self.blockService = BlockService(self.conn, databaseService)
         self.transactionPoolService = TransactionPoolService(self.conn)
+        self.poolService = PoolService(self.conn, databaseService)
 
     def publicMenu(self):
 
@@ -41,7 +43,7 @@ class MenuService:
         menu = ConsoleMenu(f"Username: {self.accountService.username}","Menu for sign up in goodchain", exit_option_text="Log out")
         transfer_item = FunctionItem("Transfer Coins", self.transactionService.CreateNewTransactions, [self.accountService.userId, self.accountService.pvk])
         etb_item = FunctionItem("Explore the Chain", self.accountService.SignIn)
-        ctp_item = FunctionItem("Check the Pool", self.accountService.SignIn)
+        ctp_item = FunctionItem("Check the Pools", self.poolService.checkThePools)
         cancel_item = FunctionItem("Cancel a transaction", self.accountService.SignIn)
         mine_item = FunctionItem("Mine a Block", self.blockService.mine, [self.accountService.userId])
         account_balance = FunctionItem("See account balance", self.transactionPoolService.CalculateUserBalacne, [self.accountService.userId])

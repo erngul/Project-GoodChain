@@ -58,12 +58,16 @@ class DatabaseService:
                 blocks = blockRepo.GetAllBlocks()
                 if(str(hashlib.sha256(bytes(str(users), 'utf-8')).hexdigest()) not in lines):
                     print('!!!!!!!Users table has been tampered with!!!!!!')
+                    input('Continue? Press:(Y)')
                 if(str(hashlib.sha256(bytes(str(transactions), 'utf-8')).hexdigest()) not in lines):
                     print('!!!!!!!Transactions table has been tampered with!!!!!!')
+                    input('Continue? Press:(Y)')
                 if(str(hashlib.sha256(bytes(str(pools), 'utf-8')).hexdigest()) not in lines):
                     print('!!!!!!!Pools table has been tampered with!!!!!!')
+                    input('Continue? Press:(Y)')
                 if(str(hashlib.sha256(bytes(str(blocks), 'utf-8')).hexdigest()) not in lines):
                     print('!!!!!!!Blocks table has been tampered with!!!!!!')
+                    input('Continue? Press:(Y)')
         except Error as e:
             print(e)
 

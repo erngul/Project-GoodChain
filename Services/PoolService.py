@@ -1,6 +1,7 @@
 import hashlib
 
 from Repositories.PoolRepo import PoolRepo
+from Repositories.UserRepo import UserRepo
 from Services.TransactionPoolService import TransactionPoolService
 from Services.UserService import UserService
 
@@ -11,9 +12,25 @@ class PoolService:
         self.poolRepo = PoolRepo(conn)
         self.transactionPoolService = TransactionPoolService(self.conn)
         self.userService = UserService(conn, database)
+        self.userRepo = UserRepo(conn)
 
     # def checkPools(self):
 
+
+    def checkThePools(self):
+        pools = self.poolRepo.GetAllPools()
+        if pools is None or len(pools) == 0:
+            print('There are no pools right now.')
+            return
+        for p in pools:
+            print(f'pool number: {p[0]}')
+        poolSelection = input(f'Which pool would you like to see?: ')
+        transactions = self.poolRepo.GetPoolTransactions(int(poolSelection))
+        count = 1
+        for t in transactions:
+            print(f'Transaction number {count} from {self.userRepo.GetUserNameWithUserId(t[1])[0]} to account {self.userRepo.GetUserNameWithUserId(t[2])[0]} has send {t[3]} amount with {t[4]} fee and has been created on {t[8]} and modified on {t[9]}')
+            count+=1
+        input('Continue? (press enter)')
 
     def checkPoolTransactions(self, poolId):
         poolTransaction = self.poolRepo.GetPoolTransactions(poolId)

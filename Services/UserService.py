@@ -66,9 +66,14 @@ class UserService:
                 self.username = user[1]
                 self.pvk = user[3]
                 self.pbk = user[4]
-                self.transactionService.checkFalseTransactions(self.userId)
+                self.userRepo.updateUserLastLogin(self.userId)
+                self.AccountNotifications()
                 unCompleted = False
         self.databaseService.hashDatabase()
+
+    def AccountNotifications(self):
+        self.transactionService.checkFlaggedTransactions(self.userId)
+
 
     def PrintPublicKey(self):
         print(self.pbk)

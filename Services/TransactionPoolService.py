@@ -36,14 +36,18 @@ class TransactionPoolService:
 
     def checkFalseTransaction(self, transaction):
         falseTransaction = False
-        recieverUser = self.userRepo.GetUserIdWithUserName(transaction[2])
-        senderUser = self.userRepo.GetUserIdWithUserName(transaction[1])
-        userBalance = self.CalculateUserBalacne(transaction[1])
+        recieverUser = transaction[2]
+        recieverPublicKey = self.userRepo.getUserPublicKeyWithUserId(recieverUser)[0]
+        senderUser = transaction[1]
+        senderUserPublicKey = self.userRepo.getUserPublicKeyWithUserId(senderUser)[0]
+        userBalance = self.CalculateUserBalacne(transaction[1], False)
         if  userBalance < 0:
             falseTransaction = True
         if transaction[3] < 0:
             falseTransaction = True
-        if self.verify([recieverUser[1], transaction[3], transaction[4], transaction[6]],transaction[5], senderUser[1]) is False:
+        sigTransaction = self.transactionRepo.GetTransactionForSignature(transaction[0])
+        verification = self.verify(sigTransaction,transaction[5], senderUserPublicKey)
+        if verification is False:
             falseTransaction = True
         if transaction[7] == 1:
             falseTransaction = True
@@ -54,15 +58,16 @@ class TransactionPoolService:
         return falseTransaction
 
 
-    def CalculateUserBalacne(self, userId):
+    def CalculateUserBalacne(self, userId, printBalance = True):
         recieved, send = self.transactionRepo.GetUserTransactions(userId)
         balance = 0.0
         for r in recieved:
-            balance += r[3]
+                balance += r[3]
         for s in send:
             balance -= s[3]
             balance -= s[4]
-        print(balance)
+        if printBalance:
+            print(f'Your balance is: {balance}')
         return balance
         # print(transactions)
 

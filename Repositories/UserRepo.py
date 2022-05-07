@@ -1,5 +1,6 @@
 from sqlite3.dbapi2 import Connection
 from sqlite3 import Error
+import datetime
 
 class UserRepo:
     conn: Connection
@@ -58,7 +59,36 @@ class UserRepo:
         sql_statement = 'SELECT Id, PublicKey from User WHERE username=:UserName'
         try:
             self.cur.execute(sql_statement, {"UserName": username})
+            return self.cur.fetchone()
+        except Error as e:
+            print(e)
+            return False
+
+    def GetUserNameWithUserId(self, userId):
+        sql_statement = 'SELECT UserName from User WHERE Id=:Id'
+        try:
+            self.cur.execute(sql_statement, {"Id": userId})
         except Error as e:
             print(e)
             return False
         return self.cur.fetchone()
+
+
+    def updateUserLastLogin(self, userId):
+        try:
+            self.cur.execute('UPDATE User set LastLogin=:lastLogin where Id=:id', {"lastLogin": str(datetime.datetime.now()), "id":userId} )
+
+            self.conn.commit()
+            print('LastLogin has been updated')
+        except Error as e:
+            print(e)
+
+    def getUserPublicKeyWithUserId(self, userId):
+
+        sql_statement = 'SELECT PublicKey from User WHERE Id=:UserId'
+        try:
+            self.cur.execute(sql_statement, {"UserId": userId})
+            return self.cur.fetchone()
+        except Error as e:
+            print(e)
+            return False

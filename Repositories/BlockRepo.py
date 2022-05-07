@@ -17,9 +17,9 @@ class BlockRepo:
             return False
         return self.cur.fetchall()
 
-    def CreateBlock(self, hash, minerId, poolId):
-        sql_statement = '''INSERT INTO Block (BlockHash,MindedUserId, PoolId, Created) VALUES(?,?,?,?)'''
-        values_to_insert = (hash,minerId,poolId, str(datetime.now()))
+    def CreateBlock(self, hash, nonce, minerId, poolId):
+        sql_statement = '''INSERT INTO Block (BlockHash, Nonce ,MindedUserId, PoolId, Created) VALUES(?,?,?,?,?)'''
+        values_to_insert = (hash,nonce,minerId,poolId, str(datetime.now()))
         try:
             self.cur.execute(sql_statement, values_to_insert)
             self.conn.commit()

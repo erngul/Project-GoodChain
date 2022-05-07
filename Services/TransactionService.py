@@ -17,7 +17,7 @@ class TransactionService:
 
     def __init__(self, conn, databaseService):
         self.conn = conn
-        self.transactionService = TransactionRepo(self.conn)
+        self.transactionRepo = TransactionRepo(self.conn)
         self.databaseService = databaseService
         self.userRepo = UserRepo(self.conn)
         self.transactionPoolService = TransactionPoolService(self.conn)
@@ -49,8 +49,12 @@ class TransactionService:
             return
         txFee = txValue * 0.05
         poolId = self.transactionPoolService.handlePool()
-        signature = self.sign([recieverUser[1], txValue, txFee, poolId], pvk)
-        self.transactionService.CreateTranscation(senderId, recieverUser[0], txValue, txFee, poolId, signature)
+        dateTime = self.transactionRepo.CreateTranscationWithoutSignature(senderId, recieverUser[0], txValue, txFee, poolId)
+        transactionId = self.transactionRepo.getTransactionIdwithDateTime(dateTime)
+        signatureTransaction = self.transactionRepo.GetTransactionForSignature(transactionId[0])
+        signature = self.sign(signatureTransaction, pvk)
+        self.transactionRepo.UpdateTransactionSignature(transactionId, signature)
+
         self.transactionPoolService.createNewPoolHash(poolId)
         self.databaseService.hashDatabase()
 
@@ -69,5 +73,14 @@ class TransactionService:
             hashes.SHA256())
         return signature
 
-    def checkFalseTransactions(self, userId):
+    def checkFlaggedTransactions(self, userId):
+
+        falseTransactions = self.transactionRepo.GetFalseTransactionsByUserId(userId)
+        if falseTransactions is not None and len(falseTransactions) > 0:
+            for T in falseTransactions:
+                recieverUserName = self.userRepo.GetUserNameWithUserId(T[2])
+                print(f'Transaction to {recieverUserName} with {T[3]} amount is not correct. And is going to be removed from the pool.')
+                self.transactionRepo.editFalseTransaction(T[0])
+
+
 

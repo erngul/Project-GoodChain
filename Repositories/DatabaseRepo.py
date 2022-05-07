@@ -36,16 +36,12 @@ class DatabaseRepo:
                         (
                                 Id  INTEGER PRIMARY KEY,
                                 BlockHash TEXT,
+                                BlockNonce integer,
                                 PoolId integer
                                 references Pool,
                                 MinedUserId
                                 referencing User,
-                                validatedUserId1
-                                referencing User,
-                                validatedUserId2
-                                referencing User,
-                                validatedUserId3
-                                referencing User,
+                                verified boolean,
                                 Created TEXT
                         );
                         '''
@@ -75,6 +71,22 @@ class DatabaseRepo:
                         Created TEXT,
                         Modified TEXT
                     );'''
+        try:
+            self.cur.execute(tb_create)
+            self.conn.commit()
+        except Error as e:
+            return
+
+        tb_create = '''create table BlockCheck
+                        (
+                                Id  INTEGER PRIMARY KEY,
+                                BlockId integer
+                                references Block,
+                                validatedUserId
+                                references User,
+                                Created TEXT
+                        );
+                        '''
         try:
             self.cur.execute(tb_create)
             self.conn.commit()
