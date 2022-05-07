@@ -84,6 +84,7 @@ class DatabaseRepo:
                                 references Block,
                                 validatedUserId
                                 references User,
+                                BlockCorrect BOOLEAN,
                                 Created TEXT
                         );
                         '''

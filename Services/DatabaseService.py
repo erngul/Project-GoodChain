@@ -9,7 +9,6 @@ from Repositories.DatabaseRepo import DatabaseRepo
 from Repositories.PoolRepo import PoolRepo
 from Repositories.TransactionsRepo import TransactionRepo
 from Repositories.UserRepo import UserRepo
-from Services.PoolService import PoolService
 import hashlib
 import os
 

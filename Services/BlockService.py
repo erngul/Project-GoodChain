@@ -24,10 +24,14 @@ class BlockService:
         falseTransactions = self.poolService.checkPoolTransactions(poolId)
         if len(falseTransactions)> 5:
             print(f'There are {len(falseTransactions)} and you can only have 5 false transactions to continue mining.')
+            return
         previousBlock = self.blockRepo.GetNewestBlock()
+        if(previousBlock[5] is None):
+            print('There is already a block in the verification state. You can create a new block when this block has been verified.')
+            return
         previousBlockHash = None
         if previousBlock is not None:
-            blockDate = datetime.strptime(previousBlock[6], '%Y-%m-%d %h:%M:%s')
+            blockDate = datetime.strptime(previousBlock[6], '%y-%m-%d %H:%M:%S.%f')
             if (blockDate > (datetime.now() - timedelta(minutes=3))):
                 print(f'The last block has been mined less than 3 minutes before, please wait till you can mine again.')
                 return
@@ -35,8 +39,6 @@ class BlockService:
         data = self.poolRepo.GetPoolTransactions(poolId)
         prefix = '0' * 2
         start = time.time()
-        if previousBlock is not None:
-            self.previousHash = previousBlock.CurrentHash
 
         for i in range(1000000):
             self.Nonce = i
@@ -54,18 +56,35 @@ class BlockService:
                 return
 
     def checkForAvailablePoolVerification(self, userId):
-        availableBlocks = self.blockRepo.GetUnverifiedBlocks(userId)
-        if availableBlocks is not None and availableBlocks is not False and len(availableBlocks > 0):
-            for b in availableBlocks:
-                print(f'Block with Id{b[0]} needs to be veriefied.')
+        availableBlock = self.blockRepo.GetUnverifiedBlocks(userId)
+        if availableBlock is not None:
+            print(f'Block with Id: "{availableBlock[0]}" needs to be veriefied.')
             condition = True
             while condition:
-                answer = input('Would you like to verify a block? Then insert the block id number. If you would like to continue press enter.')
+                answer = input('Would you like to verify this block? Then insert the block id number. If you would like to continue press enter: ')
+                selectedBlock = self.blockRepo.GetBlockById(answer)
                 if answer == '':
                     return
-                selectedBlock = self.blockRepo.GetBlockById()
-                elif answer ==
+                elif selectedBlock is not None:
+                    self.verifyBlock(selectedBlock, userId)
+                    return
 
+    def verifyBlock(self, block, userId):
+        previousBlock = self.blockRepo.GetNewestVerifiedBlock()
+        previousBlockHash = None
+        if previousBlock is not None:
+            previousBlockHash = previousBlock[1]
+        data = self.poolRepo.GetPoolTransactions(block[3])
+        digest = str(data) + str(block[2])
+        if previousBlockHash is not None:
+            digest += str(previousBlockHash)
+        digest = sha256(digest)
+        if digest == block[1]:
+            self.blockRepo.CreateNewBlockCheck(block[0], userId, 1)
+            self.transactionService.transactionRepo.CreateTranscation(1, userId,int(self.poolRepo.GetPoolTransactionFees(block[4])[0]) + 50, 0, 0, 'miningreward')
+        else:
+            print('block is not correct')
+            self.blockRepo.CreateNewBlockCheck(block[0], userId, 0)
 
 
 

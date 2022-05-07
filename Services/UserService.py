@@ -5,7 +5,6 @@ from cryptography.hazmat.primitives import hashes
 
 from Repositories.TransactionsRepo import TransactionRepo
 from Repositories.UserRepo import UserRepo
-from Services.BlockService import BlockService
 from Services.TransactionService import TransactionService
 
 
@@ -21,7 +20,6 @@ class UserService:
         self.userRepo = UserRepo(conn)
         self.databaseService = databaseService
         self.transactionService = TransactionService(self.conn, self.databaseService)
-        self.blockService =  BlockService(self.conn, self.databaseService)
 
     def RegisterAccount(self):
         unCompleted = True
@@ -69,13 +67,9 @@ class UserService:
                 self.pvk = user[3]
                 self.pbk = user[4]
                 self.userRepo.updateUserLastLogin(self.userId)
-                self.AccountNotifications()
                 unCompleted = False
         self.databaseService.hashDatabase()
 
-    def AccountNotifications(self):
-        self.transactionService.checkFlaggedTransactions(self.userId)
-        self.blockService.checkForAvailablePoolVerification(self.userId)
 
 
 

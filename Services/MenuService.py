@@ -40,6 +40,8 @@ class MenuService:
 
     def NodeMenu(self):
         self.accountService.SignIn()
+        self.transactionService.checkFlaggedTransactions(self.accountService.userId)
+        self.blockService.checkForAvailablePoolVerification(self.accountService.userId)
         menu = ConsoleMenu(f"Username: {self.accountService.username}","Menu for sign up in goodchain", exit_option_text="Log out")
         transfer_item = FunctionItem("Transfer Coins", self.transactionService.CreateNewTransactions, [self.accountService.userId, self.accountService.pvk])
         etb_item = FunctionItem("Explore the Chain", self.accountService.SignIn)
