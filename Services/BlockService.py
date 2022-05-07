@@ -25,13 +25,12 @@ class BlockService:
         if len(falseTransactions)> 5:
             print(f'There are {len(falseTransactions)} and you can only have 5 false transactions to continue mining.')
         previousBlock = self.blockRepo.GetNewestBlock()
-        # hier verder gaan.
-        blockDate = datetime.strptime(previousBlock[7], '%Y-%m-%d %h:%M:%s')
-        if(blockDate > (datetime.now() - timedelta(minutes=3))):
-            print(f'The last block has been mined less than 3 minutes before, please wait till you can mine again.')
-            return
         previousBlockHash = None
         if previousBlock is not None:
+            blockDate = datetime.strptime(previousBlock[6], '%Y-%m-%d %h:%M:%s')
+            if (blockDate > (datetime.now() - timedelta(minutes=3))):
+                print(f'The last block has been mined less than 3 minutes before, please wait till you can mine again.')
+                return
             previousBlockHash = previousBlock[1]
         data = self.poolRepo.GetPoolTransactions(poolId)
         prefix = '0' * 2
@@ -53,6 +52,23 @@ class BlockService:
                     time.sleep(20-timeCount)
                 self.blockRepo.CreateBlock(currentHash, self.Nonce, minerId, poolId)
                 return
+
+    def checkForAvailablePoolVerification(self, userId):
+        availableBlocks = self.blockRepo.GetUnverifiedBlocks(userId)
+        if availableBlocks is not None and availableBlocks is not False and len(availableBlocks > 0):
+            for b in availableBlocks:
+                print(f'Block with Id{b[0]} needs to be veriefied.')
+            condition = True
+            while condition:
+                answer = input('Would you like to verify a block? Then insert the block id number. If you would like to continue press enter.')
+                if answer == '':
+                    return
+                selectedBlock = self.blockRepo.GetBlockById()
+                elif answer ==
+
+
+
+
 
 def sha256(message):
     return hashlib.sha256(message.encode('UTF-8')).hexdigest()

@@ -36,10 +36,7 @@ class TransactionPoolService:
 
     def checkFalseTransaction(self, transaction):
         falseTransaction = False
-        recieverUser = transaction[2]
-        recieverPublicKey = self.userRepo.getUserPublicKeyWithUserId(recieverUser)[0]
-        senderUser = transaction[1]
-        senderUserPublicKey = self.userRepo.getUserPublicKeyWithUserId(senderUser)[0]
+        senderUserPublicKey = self.userRepo.getUserPublicKeyWithUserId(transaction[1])[0]
         userBalance = self.CalculateUserBalacne(transaction[1], False)
         if  userBalance < 0:
             falseTransaction = True
