@@ -1,6 +1,7 @@
 
 from src.Repositories.BlockRepo import BlockRepo
 from src.Repositories.PoolRepo import PoolRepo
+from src.Repositories.UserRepo import UserRepo
 from src.Services.PoolService import PoolService
 from src.Services.TransactionService import TransactionService
 import hashlib
@@ -15,6 +16,7 @@ class BlockService:
         self.blockRepo = BlockRepo(self.conn)
         self.poolRepo = PoolRepo(self.conn)
         self.poolService = PoolService(conn,databaseService)
+        self.userRepo = UserRepo(conn)
 
 
     # def selectPool
@@ -28,16 +30,19 @@ class BlockService:
             print(f'There are {len(falseTransactions)} and you can only have 5 false transactions to continue mining.')
             return
         previousBlock = self.blockRepo.GetNewestBlock()
-        if(previousBlock[5] is None):
-            print('There is already a block in the verification state. You can create a new block when this block has been verified.')
-            return
+
         previousBlockHash = None
         if previousBlock is not None:
-            blockDate = datetime.strptime(previousBlock[6], '%Y-%m-%d %H:%M:%S.%f')
+            if (previousBlock[5] is None):
+                print(
+                    'There is already a block in the verification state. You can create a new block when this block has been verified.')
+                return
+            blockDate = datetime.strptime(previousBlock[7], '%Y-%m-%d %H:%M:%S.%f')
             if (blockDate > (datetime.now() - timedelta(minutes=3))):
                 print(f'The last block has been mined less than 3 minutes before, please wait till you can mine again.')
                 return
             previousBlockHash = previousBlock[1]
+
         data = self.poolRepo.GetPoolTransactions(poolId)
         prefix = '0' * 2
         start = time.time()
@@ -53,12 +58,14 @@ class BlockService:
                 end = time.time()
                 timeCount = end - start
                 if(timeCount < 20):
+                    print('mining...')
                     time.sleep(20-timeCount)
+                print('mining completed')
                 self.blockRepo.CreateBlock(currentHash, self.Nonce, minerId, poolId)
                 self.databaseService.hashDatabase()
                 return
 
-    def checkForAvailablePoolVerification(self, userId):
+    def checkForAvailableBlockVerification(self, userId):
         availableBlock = self.blockRepo.GetUnverifiedBlocks(userId)
         if availableBlock is not None:
             print(f'Block with Id: "{availableBlock[0]}" needs to be veriefied.')
@@ -71,6 +78,13 @@ class BlockService:
                 elif selectedBlock is not None:
                     self.verifyBlock(selectedBlock, userId)
                     return
+
+    def checkMinedBlockStatus(self, account):
+        minedBlock, correcrtBlocks, falseBlocks = self.blockRepo.GetMinedBlockStatus(account.userId)
+        if minedBlock is None:
+            return
+        print(f'Your mined block for poolid: {minedBlock[3]} has {correcrtBlocks} correct verifications and {falseBlocks} incorrect verifications!')
+
 
     def verifyBlock(self, block, userId):
         falseTransactions = self.poolService.checkPoolTransactions(block[3])
@@ -87,7 +101,8 @@ class BlockService:
         if digest == block[1] and len(falseTransactions) == 0:
             self.blockRepo.CreateNewBlockCheck(block[0], userId, 1)
             print('block is has been verified by you.')
-            if self.blockRepo.getAmountBlockVerified(block[0]) == 3:
+            amountBlockVerified = int(self.blockRepo.getAmountBlockVerified(block[0])[0])
+            if amountBlockVerified == 3:
                 print('block has been correctly verified by 3 nodes! and is now been added to the blockChain')
                 self.transactionService.transactionRepo.CreateTranscation(1, userId,int(self.poolRepo.GetPoolTransactionFees(block[4])[0]) + 50, 0, 0, f'miningreward for block {block[0]}')
                 self.blockRepo.verifyBlock(1, block[0])

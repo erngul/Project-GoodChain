@@ -26,7 +26,7 @@ class TransactionPoolService:
 
     def checkPool(self, poolId):
         poolTransaction = self.poolRepo.GetPoolTransactions(poolId)
-        if len(poolTransaction) == 10:
+        if len(poolTransaction) == 9:
             self.poolRepo.SetFullPool(poolId)
             self.handlePool()
             return self.poolRepo.GetUsablePoolId()[0]
@@ -45,6 +45,8 @@ class TransactionPoolService:
         if verification is False:
             falseTransaction = True
         if transaction[7] == 1:
+            falseTransaction = True
+        if float(transaction[3]) <= 0 or float(transaction[4]) <= 0:
             falseTransaction = True
         if falseTransaction:
             self.transactionRepo.setFalseTransaction(transaction[0])

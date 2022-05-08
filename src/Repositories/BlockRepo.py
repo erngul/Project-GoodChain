@@ -86,10 +86,10 @@ class BlockRepo:
         sql_statement = 'SELECT count(*) from BlockCheck where BlockId = :blockId and BlockCorrect = 1'
         try:
             self.cur.execute(sql_statement, {"blockId": blockId})
+            return self.cur.fetchone()
         except Error as e:
             print(e)
             return False
-        return self.cur.fetchone()
     def getAmountBlockUnverified(self, blockId):
         sql_statement = 'SELECT count(*) from BlockCheck where BlockId = :blockId and BlockCorrect = 1'
         try:
@@ -105,3 +105,29 @@ class BlockRepo:
             print('block verification has been set.')
         except Error as e:
             print(e)
+
+    def GetMinedBlockStatus(self, userId):
+        sql_statement = 'SELECT DISTINCT B.* from Block B LEFT OUTER JOIN BlockCheck BC on B.Id = BC.BlockId WHERE B.MinedUserId = :validatedUserId and (select COUNT(id) from BlockCheck where BC.BlockId = b.Id) < 3'
+        try:
+            self.cur.execute(sql_statement, {"validatedUserId": userId})
+            minedBlock =  self.cur.fetchone()
+        except Error as e:
+            print(e)
+            return False
+        if minedBlock is None:
+            return None, None, None
+        sql_statement = 'SELECT count(*) from  BlockCheck WHERE BlockId = :blockId and BlockCorrect = 1'
+        try:
+            self.cur.execute(sql_statement, {"blockId": minedBlock[0]})
+            correctBlocks =  self.cur.fetchone()
+        except Error as e:
+            print(e)
+            return False
+        sql_statement = 'SELECT count(*) from  BlockCheck WHERE BlockId = :blockId and BlockCorrect = 0'
+        try:
+            self.cur.execute(sql_statement, {"blockId": minedBlock[0]})
+            falseBlocks =  self.cur.fetchone()
+        except Error as e:
+            print(e)
+            return False
+        return minedBlock, correctBlocks, falseBlocks

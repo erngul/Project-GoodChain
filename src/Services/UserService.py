@@ -69,6 +69,8 @@ class UserService:
                 self.pbk = user[4]
                 if(user[5] is not None):
                     self.lastLoginDate = datetime.strptime(user[5], '%Y-%m-%d %H:%M:%S.%f')
+                else:
+                    self.lastLoginDate = datetime.strptime('1950-01-01 01:01:01.111111', '%Y-%m-%d %H:%M:%S.%f')
                 self.userRepo.updateUserLastLogin(self.userId)
                 unCompleted = False
         self.databaseService.hashDatabase()

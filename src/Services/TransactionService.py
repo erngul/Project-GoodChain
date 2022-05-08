@@ -36,14 +36,18 @@ class TransactionService:
                 recieverNotFound = False
 
         try:
+            txValue = 0.0
             balanceIncorrect = True
             while balanceIncorrect:
                 txValue = float(input('Please insert the amount of coins you want to sent. decimal number only(example: '
                                       '1.5): '))
                 balanceIncorrect = False
                 if(userBalance - txValue) < 0:
-                    balanceIncorrect = True
-                    print(F'The put in amount exeeds your balance. You have a balance of: {userBalance}')
+                    print(F'The put in amount exeeds your balance. You have a balance of: {userBalance} the transaction will possibly not pass the mining.')
+                    txValue = 0.0
+                elif txValue <= 0:
+                    print(' The input amount needs to be higher than 0. The transaction will possibly not pass the mining.')
+                    txValue = 0.0
         except:
             print('The amount can only have decimal values please try again')
             return
@@ -54,7 +58,7 @@ class TransactionService:
         signatureTransaction = self.transactionRepo.GetTransactionForSignature(transactionId[0])
         signature = self.sign(signatureTransaction, pvk)
         self.transactionRepo.UpdateTransactionSignature(transactionId, signature)
-
+        self.transactionPoolService.handlePool()
         self.transactionPoolService.createNewPoolHash(poolId)
         self.databaseService.hashDatabase()
 
@@ -77,11 +81,13 @@ class TransactionService:
         falseTransactions = self.transactionRepo.GetFalseTransactionsByUserId(user.userId)
         if falseTransactions is not None and len(falseTransactions) > 0:
             for T in falseTransactions:
-                recieverUserName = self.userRepo.GetUserNameWithUserId(T[2])
-                print(f'Transaction to {recieverUserName} with {T[3]} amount. Is not correct a correct transaction. And is going to be removed from the pool.')
-                self.transactionRepo.editFalseTransaction(T[0])
-            self.databaseService.hashDatabase()
-            input('Press enter to continue')
+                blockDate = datetime.strptime(T[10], '%Y-%m-%d %H:%M:%S.%f')
+                if blockDate > user.lastLoginDate:
+                    recieverUserName = self.userRepo.GetUserNameWithUserId(T[2])
+                    print(f'Transaction to {recieverUserName} with {T[3]} amount. Is not correct a correct transaction. And is going to be removed from the pool.')
+                    self.transactionRepo.editFalseTransaction(T[0])
+                    self.databaseService.hashDatabase()
+                    input('Press enter to continue')
 
     def getSuccesfullTransactions(self, user):
         totalTransactions = 0
@@ -114,8 +120,12 @@ class TransactionService:
             condition = True
             while condition:
                 selectedTransactionId = input('Please insert the transaction id for the transaction you want to cancel: ')
-                if selectedTransactionId in transactionsIdList:
+                if int(selectedTransactionId) in transactionsIdList:
                     condition = False
                     self.transactionRepo.cancelTransaction(selectedTransactionId)
+                else:
+                    print('The selected id is not correct please try again.')
 
 
+        else:
+            print('There are no transactions to be canceld.')

@@ -129,7 +129,7 @@ class TransactionRepo:
 
 
     def GetFalseTransactionsByUserId(self, userId):
-        sql_statement = f'''SELECT * FROM Transactions WHERE FalseTransaction = 1 AND Sender = {userId} and TxValue != 0'''
+        sql_statement = f'''SELECT T.*, B.Created FROM Transactions T left outer join Block B on T.PoolId = B.PoolId WHERE FalseTransaction = 1 AND Sender = {userId} and B.PoolId is not null'''
         try:
             self.cur.execute(sql_statement)
         except Error as e:
@@ -139,7 +139,7 @@ class TransactionRepo:
 
 
     def getCancalableTransaction(self, userId):
-        sql_statement = '''select T.* from Transactions T left join Pool P on P.Id = T.PoolId left join (select * from Block B where B.pending = 0 and B.verified = 0  order by verified limit 1) as B on P.Id = B.PoolId where B.PoolId != 0 and T.Sender = :userId'''
+        sql_statement = '''select T.* from Transactions T left join Pool P on P.Id = T.PoolId left join (select * from Block B where B.pending = 0 and B.verified = 0  order by verified limit 1) as B on P.Id = B.PoolId where B.PoolId is not 0 and T.Sender = :userId and t.PoolId is not null '''
         try:
             self.cur.execute(sql_statement, {"userId": userId})
             return self.cur.fetchall()
@@ -149,7 +149,7 @@ class TransactionRepo:
             return False
 
     def cancelTransaction(self, id):
-        sql_statement = f'UPDATE Transactions Set TxValue = 0, TxFee = 0, PoolId = null WHERE Id = {id}'
+        sql_statement = f'UPDATE Transactions Set TxValue = 0, TxFee = 0, TransactionSignature = null, PoolId = null WHERE Id = {id}'
         try:
             self.cur.execute(sql_statement)
             self.conn.commit()

@@ -44,7 +44,7 @@ class MenuService:
         transfer_item = FunctionItem("Transfer Coins", self.transactionService.CreateNewTransactions, [self.accountService.userId, self.accountService.pvk])
         etb_item = FunctionItem("Explore the Chain", self.blockService.exploreTheChains)
         ctp_item = FunctionItem("Check the Pools", self.poolService.checkThePools)
-        cancel_item = FunctionItem("Cancel a transaction", self.accountService.SignIn)
+        cancel_item = FunctionItem("Cancel a transaction", self.transactionService.cancelTransaction, [self.accountService.userId])
         mine_item = FunctionItem("Mine a Block", self.blockService.mine, [self.accountService.userId])
         account_balance = FunctionItem("See account balance", self.transactionPoolService.CalculateUserBalacne, [self.accountService.userId])
         public_key = FunctionItem("see public Key", self.accountService.PrintPublicKey)
@@ -60,6 +60,8 @@ class MenuService:
         menu.show()
 
     def notifications(self):
+        self.blockService.checkMinedBlockStatus(self.accountService)
         self.transactionService.checkFlaggedTransactions(self.accountService)
-        self.blockService.checkForAvailablePoolVerification(self.accountService.userId)
+        self.blockService.checkForAvailableBlockVerification(self.accountService.userId)
         self.transactionService.getSuccesfullTransactions(self.accountService)
+
