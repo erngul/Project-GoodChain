@@ -1,9 +1,7 @@
-import hashlib
-
-from Repositories.PoolRepo import PoolRepo
-from Repositories.UserRepo import UserRepo
-from Services.TransactionPoolService import TransactionPoolService
-from Services.UserService import UserService
+from src.Repositories.PoolRepo import PoolRepo
+from src.Repositories.UserRepo import UserRepo
+from src.Services.TransactionPoolService import TransactionPoolService
+from src.Services.UserService import UserService
 
 
 class PoolService:
@@ -40,11 +38,14 @@ class PoolService:
             if falseTransaction:
                 falseTransactions.append(t)
         return falseTransactions
-        # if len(falseTransactions) != 0:
 
     def checkUnMinedPools(self):
         unMinedBlocks = self.poolRepo.getUnminedBlocks()
         pools = []
+        print(unMinedBlocks)
+        if len(unMinedBlocks) == 0:
+            print('please try again there are no pools to be mined right now.')
+            return None
         for umb in unMinedBlocks:
             print(f'pool number: {umb[0]} has {self.poolRepo.GetPoolTransactionFees(int(umb[0]))[0]} mine fees.')
             pools.append(int(umb[0]))

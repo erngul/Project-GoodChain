@@ -3,9 +3,10 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 
-from Repositories.TransactionsRepo import TransactionRepo
-from Repositories.UserRepo import UserRepo
-from Services.TransactionService import TransactionService
+from src.Repositories.TransactionsRepo import TransactionRepo
+from src.Repositories.UserRepo import UserRepo
+from src.Services.TransactionService import TransactionService
+from datetime import datetime
 
 
 class UserService:
@@ -66,6 +67,8 @@ class UserService:
                 self.username = user[1]
                 self.pvk = user[3]
                 self.pbk = user[4]
+                if(user[5] is not None):
+                    self.lastLoginDate = datetime.strptime(user[5], '%Y-%m-%d %H:%M:%S.%f')
                 self.userRepo.updateUserLastLogin(self.userId)
                 unCompleted = False
         self.databaseService.hashDatabase()

@@ -1,8 +1,6 @@
-from Services.DatabaseService import DatabaseService
-from Services.MenuService import MenuService
+from src.Services.DatabaseService import DatabaseService
+from src.Services.MenuService import MenuService
 from tendo import singleton
-
-from Services.PoolService import PoolService
 
 if __name__ == "__main__":
     # Only one instance of application

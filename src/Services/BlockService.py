@@ -1,8 +1,8 @@
 
-from Repositories.BlockRepo import BlockRepo
-from Repositories.PoolRepo import PoolRepo
-from Services.PoolService import PoolService
-from Services.TransactionService import TransactionService
+from src.Repositories.BlockRepo import BlockRepo
+from src.Repositories.PoolRepo import PoolRepo
+from src.Services.PoolService import PoolService
+from src.Services.TransactionService import TransactionService
 import hashlib
 import time
 from datetime import datetime, timedelta
@@ -21,6 +21,8 @@ class BlockService:
 
     def mine(self, minerId):
         poolId = self.poolService.checkUnMinedPools()
+        if poolId is None:
+            return
         falseTransactions = self.poolService.checkPoolTransactions(poolId)
         if len(falseTransactions)> 5:
             print(f'There are {len(falseTransactions)} and you can only have 5 false transactions to continue mining.')
@@ -31,7 +33,7 @@ class BlockService:
             return
         previousBlockHash = None
         if previousBlock is not None:
-            blockDate = datetime.strptime(previousBlock[6], '%y-%m-%d %H:%M:%S.%f')
+            blockDate = datetime.strptime(previousBlock[6], '%Y-%m-%d %H:%M:%S.%f')
             if (blockDate > (datetime.now() - timedelta(minutes=3))):
                 print(f'The last block has been mined less than 3 minutes before, please wait till you can mine again.')
                 return
@@ -53,6 +55,7 @@ class BlockService:
                 if(timeCount < 20):
                     time.sleep(20-timeCount)
                 self.blockRepo.CreateBlock(currentHash, self.Nonce, minerId, poolId)
+                self.databaseService.hashDatabase()
                 return
 
     def checkForAvailablePoolVerification(self, userId):
@@ -70,6 +73,8 @@ class BlockService:
                     return
 
     def verifyBlock(self, block, userId):
+        falseTransactions = self.poolService.checkPoolTransactions(block[3])
+
         previousBlock = self.blockRepo.GetNewestVerifiedBlock()
         previousBlockHash = None
         if previousBlock is not None:
@@ -79,12 +84,37 @@ class BlockService:
         if previousBlockHash is not None:
             digest += str(previousBlockHash)
         digest = sha256(digest)
-        if digest == block[1]:
+        if digest == block[1] and len(falseTransactions) == 0:
             self.blockRepo.CreateNewBlockCheck(block[0], userId, 1)
-            self.transactionService.transactionRepo.CreateTranscation(1, userId,int(self.poolRepo.GetPoolTransactionFees(block[4])[0]) + 50, 0, 0, 'miningreward')
+            print('block is has been verified by you.')
+            if self.blockRepo.getAmountBlockVerified(block[0]) == 3:
+                print('block has been correctly verified by 3 nodes! and is now been added to the blockChain')
+                self.transactionService.transactionRepo.CreateTranscation(1, userId,int(self.poolRepo.GetPoolTransactionFees(block[4])[0]) + 50, 0, 0, f'miningreward for block {block[0]}')
+                self.blockRepo.verifyBlock(1, block[0])
         else:
             print('block is not correct')
             self.blockRepo.CreateNewBlockCheck(block[0], userId, 0)
+            if self.blockRepo.getAmountBlockUnverified(block[0]) == 3:
+                print('block has been falsley verified by 3 nodes! and is now been removed. The remaining correct transactions will remain in the pool.')
+                self.blockRepo.verifyBlock(0, block[0])
+                self.poolRepo.UpdateFullPoolToUnfull(block)
+        self.databaseService.hashDatabase()
+
+    def exploreTheChains(self):
+        blocks = self.blockRepo.GetAllVerifiedBlocks()
+        if blocks is None or len(blocks) == 0:
+            print('There are no blocks in the blockchain right now.')
+            return
+        for b in blocks:
+            print(f'Block number: {b[0]}')
+        poolSelection = input(f'Which block would you like to see?: ')
+        transactions = self.poolRepo.GetPoolTransactions(int(b[3]))
+        count = 1
+        for t in transactions:
+            print(f'Transaction number {count} from {self.userRepo.GetUserNameWithUserId(t[1])[0]} to account {self.userRepo.GetUserNameWithUserId(t[2])[0]} has send {t[3]} amount with {t[4]} fee and has been created on {t[8]} and modified on {t[9]}')
+            count+=1
+        input('Continue? (press enter)')
+
 
 
 

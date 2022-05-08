@@ -42,6 +42,8 @@ class DatabaseRepo:
                                 MinedUserId
                                 referencing User,
                                 verified boolean,
+                                pending boolean,
+                                Modified TEXT,
                                 Created TEXT
                         );
                         '''

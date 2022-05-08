@@ -1,18 +1,16 @@
-import os
-import pathlib
 import sqlite3
 from sqlite3 import Error
 from sqlite3.dbapi2 import Connection
 
-from Repositories.BlockRepo import BlockRepo
-from Repositories.DatabaseRepo import DatabaseRepo
-from Repositories.PoolRepo import PoolRepo
-from Repositories.TransactionsRepo import TransactionRepo
-from Repositories.UserRepo import UserRepo
+from src.Repositories.BlockRepo import BlockRepo
+from src.Repositories.DatabaseRepo import DatabaseRepo
+from src.Repositories.PoolRepo import PoolRepo
+from src.Repositories.TransactionsRepo import TransactionRepo
+from src.Repositories.UserRepo import UserRepo
 import hashlib
 import os
 
-from Services.TransactionPoolService import TransactionPoolService
+from src.Services.TransactionPoolService import TransactionPoolService
 
 
 class DatabaseService:

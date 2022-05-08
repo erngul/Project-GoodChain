@@ -1,13 +1,12 @@
-from consolemenu import ConsoleMenu, SelectionMenu
-from consolemenu.items import CommandItem, FunctionItem, SubmenuItem
+from consolemenu import ConsoleMenu
+from consolemenu.items import FunctionItem
 from sqlite3.dbapi2 import Connection
 
-from Services.BlockService import BlockService
-from Services.PoolService import PoolService
-from Services.UserService import UserService
-from Services.DatabaseService import DatabaseService
-from Services.TransactionService import TransactionService
-from Services.TransactionPoolService import TransactionPoolService
+from src.Services.BlockService import BlockService
+from src.Services.PoolService import PoolService
+from src.Services.UserService import UserService
+from src.Services.TransactionService import TransactionService
+from src.Services.TransactionPoolService import TransactionPoolService
 
 
 class MenuService:
@@ -30,7 +29,7 @@ class MenuService:
 
 
         login_item = FunctionItem("Login", self.NodeMenu)
-        etb = FunctionItem("Explore the blockchain", self.accountService.SignIn)
+        etb = FunctionItem("Explore the blockchain", self.blockService.exploreTheChains)
         register_item = FunctionItem("Singup", self.accountService.RegisterAccount)
         menu.append_item(login_item)
         menu.append_item(etb)
@@ -40,11 +39,10 @@ class MenuService:
 
     def NodeMenu(self):
         self.accountService.SignIn()
-        self.transactionService.checkFlaggedTransactions(self.accountService.userId)
-        self.blockService.checkForAvailablePoolVerification(self.accountService.userId)
+        self.notifications()
         menu = ConsoleMenu(f"Username: {self.accountService.username}","Menu for sign up in goodchain", exit_option_text="Log out")
         transfer_item = FunctionItem("Transfer Coins", self.transactionService.CreateNewTransactions, [self.accountService.userId, self.accountService.pvk])
-        etb_item = FunctionItem("Explore the Chain", self.accountService.SignIn)
+        etb_item = FunctionItem("Explore the Chain", self.blockService.exploreTheChains)
         ctp_item = FunctionItem("Check the Pools", self.poolService.checkThePools)
         cancel_item = FunctionItem("Cancel a transaction", self.accountService.SignIn)
         mine_item = FunctionItem("Mine a Block", self.blockService.mine, [self.accountService.userId])
@@ -60,3 +58,8 @@ class MenuService:
         menu.append_item(public_key)
         menu.append_item(private_key)
         menu.show()
+
+    def notifications(self):
+        self.transactionService.checkFlaggedTransactions(self.accountService)
+        self.blockService.checkForAvailablePoolVerification(self.accountService.userId)
+        self.transactionService.getSuccesfullTransactions(self.accountService)

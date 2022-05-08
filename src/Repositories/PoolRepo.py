@@ -19,7 +19,7 @@ class PoolRepo:
         return self.cur.fetchall()
 
 
-    def CreatePool(self, BlockId = None, FullPool = 0):
+    def CreatePool(self, FullPool = 0):
         sql_statement = '''INSERT INTO Pool (FullPool, Created) VALUES(?,?)'''
         values_to_insert = (FullPool, str(datetime.now()))
         try:
@@ -30,7 +30,7 @@ class PoolRepo:
             print(e)
 
     def GetUsablePoolId(self):
-        sql_statement = 'SELECT P.Id from Pool as P left OUTER JOIN Block B on P.Id = B.PoolId WHERE B.Id IS NULL AND P.FullPool = 0'
+        sql_statement = 'SELECT P.Id from Pool as P left OUTER JOIN Block B on P.Id = B.PoolId WHERE B.Id IS NULL AND P.FullPool = 0 order by 1 limit 1'
         try:
             self.cur.execute(sql_statement)
         except Error as e:
@@ -48,7 +48,7 @@ class PoolRepo:
         # values_to_insert = (BlockId, FullPool, str(datetime.now()))
 
     def GetPoolTransactions(self, poolId):
-        sql_statement = f'''SELECT T.* from Pool as P left join Transactions T on P.Id = T.PoolId WHERE P.Id = {poolId} and T.FalseTransaction = 0'''
+        sql_statement = f'''SELECT T.* from Pool as P left join Transactions T on P.Id = T.PoolId WHERE P.Id = {poolId} and T.FalseTransaction = 0 and TxValue != 0'''
         try:
             self.cur.execute(sql_statement)
         except Error as e:
@@ -57,7 +57,7 @@ class PoolRepo:
         return self.cur.fetchall()
 
     def GetPoolTransactionFees(self, poolId):
-        sql_statement = f'''SELECT count(TxFee) from Pool as P left join Transactions T on P.Id = T.PoolId WHERE P.Id = {poolId}'''
+        sql_statement = f'''SELECT count(TxFee) from Pool as P left join Transactions T on P.Id = T.PoolId WHERE P.Id = {poolId} and T.FalseTransaction = 0 and TxValue != 0'''
         try:
             self.cur.execute(sql_statement)
         except Error as e:
@@ -83,3 +83,12 @@ SELECT P.Id from Block as B LEFT JOIN Pool P on P.Id = B.PoolId where FullPool =
             print(e)
             return False
         return self.cur.fetchall()
+
+    def UpdateFullPoolToUnfull(self, poolId):
+            try:
+                self.cur.execute('UPDATE Pool set FullPool=:fullPool, Modified=:modified where Id=:id',
+                                 {"fullPool": 0, "id": poolId, "modified": str(datetime.now())})
+                self.conn.commit()
+            except Error as e:
+                print(e)
+                return False

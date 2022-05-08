@@ -1,7 +1,7 @@
 from datetime import datetime, date
 from sqlite3.dbapi2 import Connection
 from sqlite3 import Error
-
+from datetime import datetime
 class BlockRepo:
     conn: Connection
     def __init__(self, conn):
@@ -17,9 +17,18 @@ class BlockRepo:
             return False
         return self.cur.fetchall()
 
+    def GetAllVerifiedBlocks(self):
+        sql_statement = '''SELECT * FROM Block where verified = 1'''
+        try:
+            self.cur.execute(sql_statement)
+        except Error as e:
+            print(e)
+            return False
+        return self.cur.fetchall()
+
     def CreateBlock(self, hash, nonce, minerId, poolId):
-        sql_statement = '''INSERT INTO Block (BlockHash, BlockNonce ,MinedUserId, PoolId, Created) VALUES(?,?,?,?,?)'''
-        values_to_insert = (hash,nonce,minerId,poolId, str(datetime.now()))
+        sql_statement = '''INSERT INTO Block (BlockHash, BlockNonce ,MinedUserId, PoolId, pending, Created) VALUES(?,?,?,?,?,?)'''
+        values_to_insert = (hash,nonce,minerId,poolId,1, str(datetime.now()))
         try:
             self.cur.execute(sql_statement, values_to_insert)
             self.conn.commit()
@@ -28,13 +37,13 @@ class BlockRepo:
             print(e)
 
     def GetNewestBlock(self):
-        sql_statement = '''SELECT * FROM Block order by 1 desc limit 1'''
+        sql_statement = '''SELECT * FROM Block where verified != 0 order by 1 desc limit 1'''
         try:
             self.cur.execute(sql_statement)
+            return self.cur.fetchone()
         except Error as e:
             print(e)
             return False
-        return self.cur.fetchone()
 
     def GetNewestVerifiedBlock(self):
         sql_statement = '''SELECT * FROM Block WHERE verified = 1 order by 1 desc limit 1'''
@@ -74,10 +83,25 @@ class BlockRepo:
             print(e)
 
     def getAmountBlockVerified(self, blockId):
-        sql_statement = 'SELECT * from BlockCheck where BlockId = :id'
+        sql_statement = 'SELECT count(*) from BlockCheck where BlockId = :blockId and BlockCorrect = 1'
         try:
-            self.cur.execute(sql_statement, {"id": id})
+            self.cur.execute(sql_statement, {"blockId": blockId})
         except Error as e:
             print(e)
             return False
         return self.cur.fetchone()
+    def getAmountBlockUnverified(self, blockId):
+        sql_statement = 'SELECT count(*) from BlockCheck where BlockId = :blockId and BlockCorrect = 1'
+        try:
+            self.cur.execute(sql_statement, {"blockId": blockId})
+        except Error as e:
+            print(e)
+            return False
+        return self.cur.fetchone()
+    def verifyBlock(self,verified, blockId):
+        try:
+            self.cur.execute('UPDATE Block set verified=:verified, Pending=:pending, Modified=:modified where Id=:id', {"verified": verified, "pending": 0, 'modified': str(datetime.now()), "id":blockId} )
+            self.conn.commit()
+            print('block verification has been set.')
+        except Error as e:
+            print(e)

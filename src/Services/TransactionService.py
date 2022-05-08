@@ -1,15 +1,14 @@
 from sqlite3.dbapi2 import Connection
 
-from Repositories.PoolRepo import PoolRepo
-from Repositories.TransactionsRepo import TransactionRepo
-from Repositories.UserRepo import UserRepo
-from cryptography.hazmat.primitives.asymmetric import rsa
+from src.Repositories.BlockRepo import BlockRepo
+from src.Repositories.TransactionsRepo import TransactionRepo
+from src.Repositories.UserRepo import UserRepo
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import *
 
-from Services.TransactionPoolService import TransactionPoolService
+from src.Services.TransactionPoolService import TransactionPoolService
+from datetime import datetime
 
 
 class TransactionService:
@@ -21,6 +20,7 @@ class TransactionService:
         self.databaseService = databaseService
         self.userRepo = UserRepo(self.conn)
         self.transactionPoolService = TransactionPoolService(self.conn)
+        self.blockRepo = BlockRepo(conn)
 
     def CreateNewTransactions(self, senderId, pvk):
         global recieverUser
@@ -73,13 +73,49 @@ class TransactionService:
             hashes.SHA256())
         return signature
 
-    def checkFlaggedTransactions(self, userId):
-
-        falseTransactions = self.transactionRepo.GetFalseTransactionsByUserId(userId)
+    def checkFlaggedTransactions(self, user):
+        falseTransactions = self.transactionRepo.GetFalseTransactionsByUserId(user.userId)
         if falseTransactions is not None and len(falseTransactions) > 0:
             for T in falseTransactions:
                 recieverUserName = self.userRepo.GetUserNameWithUserId(T[2])
-                print(f'Transaction to {recieverUserName} with {T[3]} amount is not correct. And is going to be removed from the pool.')
+                print(f'Transaction to {recieverUserName} with {T[3]} amount. Is not correct a correct transaction. And is going to be removed from the pool.')
                 self.transactionRepo.editFalseTransaction(T[0])
+            self.databaseService.hashDatabase()
+            input('Press enter to continue')
+
+    def getSuccesfullTransactions(self, user):
+        totalTransactions = 0
+        allBlocks = self.blockRepo.GetAllVerifiedBlocks()
+        blocksAfterLastLogin = []
+        for b in allBlocks:
+            blockDate = datetime.strptime(b[7], '%Y-%m-%d %H:%M:%S.%f')
+            if blockDate > user.lastLoginDate and b[5] == 1:
+                blocksAfterLastLogin.append(b)
+            totalTransactions += len(self.transactionPoolService.poolRepo.GetPoolTransactions(b[0]))
+        print(f'There are a total of {len(allBlocks)} verified blocks in the blockchain with a total of {totalTransactions} verified transactions.')
+        if len(blocksAfterLastLogin) > 0:
+            print(f'There are {len(blocksAfterLastLogin)} created after your last login.')
+            for b in blocksAfterLastLogin:
+                correctTransactions = self.transactionPoolService.poolRepo.GetPoolTransactions(b[3])
+                if correctTransactions is not None and len(correctTransactions) > 0:
+                    for T in correctTransactions:
+                        recieverUserName = self.userRepo.GetUserNameWithUserId(T[2])
+                        print(f'Transaction to {recieverUserName} with {T[3]} amount is correct. And has been added to the blockchain.')
+                    input('Press enter to continue')
+
+
+    def cancelTransaction(self, userId):
+        transactions = self.transactionRepo.getCancalableTransaction(userId)
+        if transactions is not None and len(transactions) > 0:
+            transactionsIdList = []
+            for t in transactions:
+                transactionsIdList.append(t[0])
+                print(f'Transaction id {t[0]} from {self.userRepo.GetUserNameWithUserId(t[1])[0]} to account {self.userRepo.GetUserNameWithUserId(t[2])[0]} has send {t[3]} amount with {t[4]} fee and has been created on {t[8]} and modified on {t[9]}')
+            condition = True
+            while condition:
+                selectedTransactionId = input('Please insert the transaction id for the transaction you want to cancel: ')
+                if selectedTransactionId in transactionsIdList:
+                    condition = False
+                    self.transactionRepo.cancelTransaction(selectedTransactionId)
 
 
