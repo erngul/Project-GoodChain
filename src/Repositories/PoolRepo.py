@@ -57,7 +57,7 @@ class PoolRepo:
         return self.cur.fetchall()
 
     def GetPoolTransactionFees(self, poolId):
-        sql_statement = f'''SELECT count(TxFee) from Pool as P left join Transactions T on P.Id = T.PoolId WHERE P.Id = {poolId} and T.FalseTransaction = 0 and TxValue != 0'''
+        sql_statement = f'''SELECT sum(TxFee) from Pool as P left join Transactions T on P.Id = T.PoolId WHERE P.Id = {poolId} and T.FalseTransaction = 0 and TxValue != 0'''
         try:
             self.cur.execute(sql_statement)
         except Error as e:
