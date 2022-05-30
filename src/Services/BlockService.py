@@ -61,7 +61,7 @@ class BlockService:
                     print('mining...')
                     time.sleep(20-timeCount)
                 print('mining completed')
-                self.blockRepo.CreateBlock(currentHash, self.Nonce, minerId, poolId)
+                self.blockRepo.CreateBlock(currentHash, self.Nonce, minerId, poolId, data)
                 self.databaseService.hashDatabase()
                 return
 
@@ -104,7 +104,7 @@ class BlockService:
             amountBlockVerified = int(self.blockRepo.getAmountBlockVerified(block[0])[0])
             if amountBlockVerified == 3:
                 print('block has been correctly verified by 3 nodes! and is now been added to the blockChain')
-                self.transactionService.transactionRepo.CreateTranscation(1, userId,int(self.poolRepo.GetPoolTransactionFees(block[4])[0]) + 50, 0, 0, f'miningreward for block {block[0]}')
+                self.transactionService.transactionRepo.CreateTranscation(1, userId,int(self.poolRepo.GetPoolTransactionFees(block[3])[0]) + 50, 0, 0, f'miningreward for block {block[0]}')
                 self.blockRepo.verifyBlock(1, block[0])
         else:
             print('block is not correct')
