@@ -16,31 +16,16 @@ class DatabaseRepo:
         except Error as e:
             return
 
-        tb_create = '''create table Pool
-                    (
-                        Id  INTEGER PRIMARY KEY,
-                        PoolHash integer,
-                        FullPool boolean,
-                        FalsePool boolean,
-                        Created TEXT,
-                        Modified TEXT
-
-                    );'''
-        try:
-            self.cur.execute(tb_create)
-            self.conn.commit()
-        except Error as e:
-            return
-
         tb_create = '''create table Block
                         (
                                 Id  INTEGER PRIMARY KEY,
                                 BlockHash TEXT,
                                 BlockNonce integer,
-                                PoolId integer
-                                references Pool,
+                                TransactionsData TEXT,
                                 MinedUserId
                                 referencing User,
+                                PreviousBlockId
+                                referencing Block,
                                 verified boolean,
                                 pending boolean,
                                 Modified TEXT,
@@ -66,9 +51,6 @@ class DatabaseRepo:
                         TxValue  decimal,
                         TxFee  decimal,
                         TransactionSignature TEXT,
-                        PoolId integer
-                        constraint Transactions_Users_Id_fk
-                            references Pool,
                         FalseTransaction boolean,
                         Created TEXT,
                         Modified TEXT

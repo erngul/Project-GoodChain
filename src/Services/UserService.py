@@ -44,9 +44,12 @@ class UserService:
                 self.userRepo.CreateUser(userName, digest.finalize(), public_key, private_key)
                 userId = self.userRepo.GetUserIdWithUserName(userName)[0]
                 transactionRepo = TransactionRepo(self.conn)
-
-                signature = self.transactionService.sign([public_key, 50.00, 0, 0], private_key)
-                transactionRepo.CreateTranscation(1, userId, 50.00, 0, 0, signature)
+                PrivateFunderUser = self.userRepo.GetPrivateKeyWithUserId(1)[0]
+                transactionRepo.CreateTranscationWithoutSignature(1, userId, 50.00, 0.0)
+                transactionId = transactionRepo.getLastTransaction()
+                signatureTransaction = transactionRepo.GetTransactionForSignature(transactionId[0])
+                signature = self.transactionService.sign(signatureTransaction, PrivateFunderUser)
+                transactionRepo.UpdateTransactionSignature(transactionId, signature)
             else:
                 print("Passwords don't match please try again.")
         self.databaseService.hashDatabase()

@@ -3,10 +3,8 @@ from consolemenu.items import FunctionItem
 from sqlite3.dbapi2 import Connection
 
 from src.Services.BlockService import BlockService
-from src.Services.PoolService import PoolService
-from src.Services.UserService import UserService
 from src.Services.TransactionService import TransactionService
-from src.Services.TransactionPoolService import TransactionPoolService
+from src.Services.UserService import UserService
 
 
 class MenuService:
@@ -20,8 +18,6 @@ class MenuService:
         self.accountService = UserService(self.conn, databaseService)
         self.transactionService = TransactionService(self.conn, databaseService)
         self.blockService = BlockService(self.conn, databaseService)
-        self.transactionPoolService = TransactionPoolService(self.conn)
-        self.poolService = PoolService(self.conn, databaseService)
 
     def publicMenu(self):
 
@@ -43,10 +39,10 @@ class MenuService:
         menu = ConsoleMenu(f"Username: {self.accountService.username}","Menu for sign up in goodchain", exit_option_text="Log out")
         transfer_item = FunctionItem("Transfer Coins", self.transactionService.CreateNewTransactions, [self.accountService.userId, self.accountService.pvk])
         etb_item = FunctionItem("Explore the Chain", self.blockService.exploreTheChains)
-        ctp_item = FunctionItem("Check the Pools", self.poolService.checkThePools)
+        ctp_item = FunctionItem("Check the Pool", self.transactionService.checkThePool)
         cancel_item = FunctionItem("Cancel a transaction", self.transactionService.cancelTransaction, [self.accountService.userId])
         mine_item = FunctionItem("Mine a Block", self.blockService.mine, [self.accountService.userId])
-        account_balance = FunctionItem("See account balance", self.transactionPoolService.CalculateUserBalacne, [self.accountService.userId])
+        account_balance = FunctionItem("See account balance", self.transactionService.CalculateUserBalacne, [self.accountService.userId])
         public_key = FunctionItem("see public Key", self.accountService.PrintPublicKey)
         private_key = FunctionItem("see private Key", self.accountService.PrintPrivateKey)
         menu.append_item(transfer_item)

@@ -18,9 +18,9 @@ class TransactionRepo:
         return self.cur.fetchall()
 
 
-    def CreateTranscation(self, senderId, recieverId, txValue, txFee, poolId, signature):
-        sql_statement = '''INSERT INTO Transactions (Sender, Receiver, TxValue, TxFee, PoolId,TransactionSignature, Created, FalseTransaction) VALUES(?,?,?,?,?,?,?,?)'''
-        values_to_insert = (senderId, recieverId, txValue, txFee, poolId, signature, datetime.datetime.now(), 0)
+    def CreateTranscation(self, senderId, recieverId, txValue, txFee, signature):
+        sql_statement = '''INSERT INTO Transactions (Sender, Receiver, TxValue, TxFee,TransactionSignature, Created, FalseTransaction) VALUES(?,?,?,?,?,?,?)'''
+        values_to_insert = (senderId, recieverId, txValue, txFee, signature, datetime.datetime.now(), 0)
         try:
             self.cur.execute(sql_statement, values_to_insert)
             self.conn.commit()
@@ -28,10 +28,10 @@ class TransactionRepo:
         except Error as e:
             print(e)
 
-    def CreateTranscationWithoutSignature(self, senderId, recieverId, txValue, txFee, poolId):
+    def CreateTranscationWithoutSignature(self, senderId, recieverId, txValue, txFee):
         dateTime = datetime.datetime.now()
-        sql_statement = '''INSERT INTO Transactions (Sender, Receiver, TxValue, TxFee, PoolId, Created, FalseTransaction) VALUES(?,?,?,?,?,?,?)'''
-        values_to_insert = (senderId, recieverId, txValue, txFee, poolId, dateTime, 0)
+        sql_statement = '''INSERT INTO Transactions (Sender, Receiver, TxValue, TxFee, Created, FalseTransaction) VALUES(?,?,?,?,?,?)'''
+        values_to_insert = (senderId, recieverId, txValue, txFee, dateTime, 0)
         try:
             self.cur.execute(sql_statement, values_to_insert)
             self.conn.commit()
@@ -39,10 +39,10 @@ class TransactionRepo:
             return dateTime
         except Error as e:
             print(e)
-    def getTransactionIdwithDateTime(self, dateTime):
-        sql_statement = 'SELECT Id FROM Transactions WHERE created=:created'
+    def getLastTransaction(self):
+        sql_statement = 'SELECT Id FROM Transactions order by 1 desc'
         try:
-            self.cur.execute(sql_statement, {"created": str(dateTime)})
+            self.cur.execute(sql_statement)
         except Error as e:
             print(e)
             return False
@@ -57,20 +57,21 @@ class TransactionRepo:
         except Error as e:
             print(e)
     def GetTransactionForSignature(self, transactionId):
-        sql_statement = f'''SELECT Id FROM Transactions WHERE id = {transactionId}'''
+        sql_statement = f'''SELECT Sender, Receiver, TxValue, TxFee, Created FROM Transactions WHERE id = {transactionId}'''
         try:
             self.cur.execute(sql_statement)
         except Error as e:
             print(e)
             return False
-        return self.cur.fetchone()
+        transaction = self.cur.fetchone()
+        transactionModified = (transaction[0], transaction[1], float(transaction[2]), float(transaction[3]), transaction[4])
+        return transactionModified
 
 
 
     def GetUserTransactions(self, userId):
         sql_statement = 'SELECT T.* from Transactions T ' \
-                        'LEFT OUTER JOIN Block B on b.PoolId = T.PoolId ' \
-                        'WHERE Receiver=:Receiver and (b.verified = 1 or T.poolId = 0) and T.FalseTransaction = 0 and TxValue != 0'
+                        'WHERE Receiver=:Receiver  and T.FalseTransaction = 0 and TxValue != 0'
         try:
             self.cur.execute(sql_statement, {"Receiver": userId})
         except Error as e:
@@ -87,17 +88,16 @@ class TransactionRepo:
         send = self.cur.fetchall()
         return recieved, send
 
-    def GetUserTransactionsWithoutABlock(self, userId):
-        sql_statement = 'SELECT T.* from Transactions T ' \
-                        'LEFT OUTER JOIN Block B on b.PoolId = T.PoolId ' \
-                        'WHERE Receiver=:Receiver and (b.verified = 1 or T.poolId = 0) and T.FalseTransaction = 0 and TxValue != 0'
-        try:
-            self.cur.execute(sql_statement, {"Receiver": userId})
-            return self.cur.fetchall()
-
-        except Error as e:
-            print(e)
-            return False
+    # def GetUserTransactionsWithoutABlock(self, userId):
+    #     sql_statement = 'SELECT T.* from Transactions T ' \
+    #                     'WHERE Receiver=:Receiver and (b.verified = 1 or T.poolId = 0) and T.FalseTransaction = 0 and TxValue != 0'
+    #     try:
+    #         self.cur.execute(sql_statement, {"Receiver": userId})
+    #         return self.cur.fetchall()
+    #
+    #     except Error as e:
+    #         print(e)
+    #         return False
 
     def updateFunderTransaction(self):
         sql_statement = 'UPDATE Transactions Set TxValue = 999999999999999999 WHERE Id = 1'
@@ -110,7 +110,7 @@ class TransactionRepo:
 
 
     def editFalseTransaction(self, transactionId):
-        sql_statement = f'UPDATE Transactions Set TxFee = 0, TxValue = 0, FalseTransaction = 1, PoolId = null WHERE Id = {transactionId}'
+        sql_statement = f'UPDATE Transactions Set TxFee = 0, TxValue = 0, FalseTransaction = 1 WHERE Id = {transactionId}'
         try:
             self.cur.execute(sql_statement)
             self.conn.commit()
@@ -129,7 +129,7 @@ class TransactionRepo:
 
 
     def GetFalseTransactionsByUserId(self, userId):
-        sql_statement = f'''SELECT T.*, B.Created FROM Transactions T left outer join Block B on T.PoolId = B.PoolId WHERE FalseTransaction = 1 AND Sender = {userId} and B.PoolId is not null'''
+        sql_statement = f'''SELECT T.* FROM Transactions T WHERE FalseTransaction = 1 AND Sender = {userId} AND TxValue != 0'''
         try:
             self.cur.execute(sql_statement)
         except Error as e:
@@ -139,7 +139,7 @@ class TransactionRepo:
 
 
     def getCancalableTransaction(self, userId):
-        sql_statement = '''select T.* from Transactions T left join Pool P on P.Id = T.PoolId left join (select * from Block B where B.pending = 0 and B.verified = 0  order by verified limit 1) as B on P.Id = B.PoolId where B.PoolId is not 0 and T.Sender = :userId and t.PoolId is not null '''
+        sql_statement = '''select T.* from Transactions T where FalseTransaction = 0'''
         try:
             self.cur.execute(sql_statement, {"userId": userId})
             return self.cur.fetchall()
@@ -149,7 +149,7 @@ class TransactionRepo:
             return False
 
     def cancelTransaction(self, id):
-        sql_statement = f'UPDATE Transactions Set TxValue = 0, TxFee = 0, TransactionSignature = null, PoolId = null WHERE Id = {id}'
+        sql_statement = f'UPDATE Transactions Set TxValue = 0, TxFee = 0, TransactionSignature = null WHERE Id = {id}'
         try:
             self.cur.execute(sql_statement)
             self.conn.commit()
@@ -157,3 +157,35 @@ class TransactionRepo:
         except Error as e:
             print(e)
 
+    def GetPoolTransactions(self):
+        sql_statement = '''SELECT Sender, Receiver, TxValue,TxFee,TransactionSignature,Created,Modified FROM Transactions where FalseTransaction = 0 and TxValue != 0'''
+        try:
+            self.cur.execute(sql_statement)
+        except Error as e:
+            print(e)
+            return False
+        return self.cur.fetchall()
+
+
+    def GetTransactionWithSignature(self, signature):
+        sql_statement = f'''SELECT Sender, Receiver, TxValue, TxFee, Created FROM Transactions WHERE TransactionSignature =:signature'''
+        try:
+            self.cur.execute(sql_statement , {"signature": signature})
+        except Error as e:
+            print(e)
+            return False
+        transaction = self.cur.fetchone()
+        if transaction is None:
+            return None
+        transactionModified = (transaction[0], transaction[1], float(transaction[2]), float(transaction[3]), transaction[4])
+        return transactionModified
+
+
+    def removeTransactionWithTxSig(self, signature):
+        sql_statement = '''DELETE FROM Transactions WHERE TransactionSignature = ?'''
+        try:
+            self.cur.execute(sql_statement, (signature, ))
+            self.conn.commit()
+        except Error as e:
+            print(e)
+            return False

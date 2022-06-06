@@ -27,18 +27,34 @@ class BlockRepo:
             return False
         return self.cur.fetchall()
 
-    def CreateBlock(self, hash, nonce, minerId, poolId, data):
-        sql_statement = '''INSERT INTO Block (BlockHash, BlockNonce ,MinedUserId, PoolId, pending, Created) VALUES(?,?,?,?,?,?)'''
-        values_to_insert = (hash,nonce,minerId,poolId,1, str(datetime.now()))
+    def GetAllVerifiedBlocksData(self):
+        sql_statement = '''SELECT * FROM Block where verified = 1 order by 1 desc'''
+        try:
+            self.cur.execute(sql_statement)
+        except Error as e:
+            print(e)
+            return False
+        return self.cur.fetchall()
+
+    def CreateBlock(self, hash, nonce, minerId, data, PreviousBlockId = None):
+        sql_statement = '''INSERT INTO Block (BlockHash, BlockNonce ,MinedUserId, pending, Created, PreviousBlockId, TransactionsData) VALUES(?,?,?,?,?,?,?)'''
+        values_to_insert = (hash,nonce,minerId,1, str(datetime.now()),PreviousBlockId, data)
         try:
             self.cur.execute(sql_statement, values_to_insert)
             self.conn.commit()
             print('Block has been added.')
         except Error as e:
             print(e)
-        with open(r"block1.dat", 'w+') as outputFile:
-            print(data)
-            json.dump(data, outputFile)
+
+    def CreateGenisisBlock(self, hash, nonce, minerId, data, PreviousBlockId = None):
+        sql_statement = '''INSERT INTO Block (BlockHash, BlockNonce ,MinedUserId, pending,Modified, Created, PreviousBlockId, TransactionsData, verified) VALUES(?,?,?,?,?,?,?,?,?)'''
+        values_to_insert = (hash,nonce,minerId,0, str(datetime.now()),str(datetime.now()),PreviousBlockId, data, 1)
+        try:
+            self.cur.execute(sql_statement, values_to_insert)
+            self.conn.commit()
+            print('Block has been added.')
+        except Error as e:
+            print(e)
 
 
     def GetNewestBlock(self):
@@ -60,7 +76,7 @@ class BlockRepo:
         return self.cur.fetchone()
 
     def GetUnverifiedBlocks(self, userId):
-        sql_statement = 'SELECT DISTINCT B.* from Block B LEFT OUTER JOIN BlockCheck BC on B.Id = BC.BlockId WHERE BC.validatedUserId is not :validatedUserId  and B.MinedUserId is not :validatedUserId and (select COUNT(BC1.id) from BlockCheck BC1 where BC1.BlockId = b.Id) < 3'
+        sql_statement = 'SELECT DISTINCT B.* from Block B LEFT OUTER JOIN BlockCheck BC on B.Id = BC.BlockId WHERE BC.validatedUserId is not :validatedUserId  and B.MinedUserId is not :validatedUserId and (select COUNT(BC1.id) from BlockCheck BC1 where BC1.BlockId = b.Id) < 3 and B.verified is null'
         try:
             self.cur.execute(sql_statement, {"validatedUserId": userId})
         except Error as e:

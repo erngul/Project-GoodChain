@@ -1,16 +1,20 @@
+import pickle
 import sqlite3
 from sqlite3 import Error
 from sqlite3.dbapi2 import Connection
 
 from src.Repositories.BlockRepo import BlockRepo
 from src.Repositories.DatabaseRepo import DatabaseRepo
-from src.Repositories.PoolRepo import PoolRepo
 from src.Repositories.TransactionsRepo import TransactionRepo
 from src.Repositories.UserRepo import UserRepo
 import hashlib
 import os
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import hashes
+import datetime
 
-from src.Services.TransactionPoolService import TransactionPoolService
+from src.Services.BlockService import BlockService
 
 
 class DatabaseService:
@@ -28,10 +32,18 @@ class DatabaseService:
             userRepo = UserRepo(self.conn)
             transactionRepo = TransactionRepo(self.conn)
             if not userRepo.GetUserIdWithUserName('FundingUser'):
-                userRepo.CreateFundingUser()
-                transactionRepo.CreateTranscation(1,1,999999999999999999, 0,0, 1)
-            transactionPoolService = TransactionPoolService(self.conn)
-            transactionPoolService.handlePool()
+                privateIn = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+                private_key = privateIn.private_bytes(
+                    encoding=serialization.Encoding.PEM, format=serialization.PrivateFormat.TraditionalOpenSSL,
+                    encryption_algorithm=serialization.NoEncryption()
+                )
+                publicIn = privateIn.public_key()
+                public_key = publicIn.public_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PublicFormat.SubjectPublicKeyInfo)
+                userRepo.CreateFundingUser(private_key, public_key)
+                blockRepo = BlockService(self.conn, self)
+                blockRepo.mineGenisisBlock(pickle.dumps([(None,1,999999999999999999, 0,0, datetime.datetime.now(), datetime.datetime.now())]))
 
 
 
@@ -48,9 +60,6 @@ class DatabaseService:
                 transactionRepo = TransactionRepo(self.conn)
                 transactions = transactionRepo.GetAllTransactions()
 
-                poolRepo = PoolRepo(self.conn)
-                pools = poolRepo.GetAllPools()
-
                 blockRepo = BlockRepo(self.conn)
                 blocks = blockRepo.GetAllBlocks()
                 if(str(hashlib.sha256(bytes(str(users), 'utf-8')).hexdigest()) not in lines):
@@ -58,9 +67,6 @@ class DatabaseService:
                     input('Continue? Press:(Y)')
                 if(str(hashlib.sha256(bytes(str(transactions), 'utf-8')).hexdigest()) not in lines):
                     print('!!!!!!!Transactions table has been tampered with!!!!!!')
-                    input('Continue? Press:(Y)')
-                if(str(hashlib.sha256(bytes(str(pools), 'utf-8')).hexdigest()) not in lines):
-                    print('!!!!!!!Pools table has been tampered with!!!!!!')
                     input('Continue? Press:(Y)')
                 if(str(hashlib.sha256(bytes(str(blocks), 'utf-8')).hexdigest()) not in lines):
                     print('!!!!!!!Blocks table has been tampered with!!!!!!')
@@ -75,13 +81,10 @@ class DatabaseService:
         transactionRepo = TransactionRepo(self.conn)
         transactions = transactionRepo.GetAllTransactions()
 
-        poolRepo = PoolRepo(self.conn)
-        pools = poolRepo.GetAllPools()
-
         blockRepo = BlockRepo(self.conn)
         blocks = blockRepo.GetAllBlocks()
         # lines = [, , ]
         # f.writelines()
         # f.writelines(lines)
-        f.write("%s\n%s\n%s\n%s\n" % (str(hashlib.sha256(bytes(str(users), 'utf-8')).hexdigest()), str(hashlib.sha256(bytes(str(transactions), 'utf-8')).hexdigest()), str(hashlib.sha256(bytes(str(pools), 'utf-8')).hexdigest()), str(hashlib.sha256(bytes(str(blocks), 'utf-8')).hexdigest())))
+        f.write("%s\n%s\n%s\n" % (str(hashlib.sha256(bytes(str(users), 'utf-8')).hexdigest()), str(hashlib.sha256(bytes(str(transactions), 'utf-8')).hexdigest()),  str(hashlib.sha256(bytes(str(blocks), 'utf-8')).hexdigest())))
         f.close()
