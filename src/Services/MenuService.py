@@ -3,9 +3,10 @@ from consolemenu.items import FunctionItem
 from sqlite3.dbapi2 import Connection
 
 from src.Services.BlockService import BlockService
+from src.Services.ServerService import ServerService
 from src.Services.TransactionService import TransactionService
 from src.Services.UserService import UserService
-
+from threading import Thread
 
 class MenuService:
 
@@ -13,6 +14,7 @@ class MenuService:
     accountService: UserService
 
     def __init__(self, databaseService):
+        self.serverService = ServerService()
         self.databaseService = databaseService
         self.conn = databaseService.conn
         self.accountService = UserService(self.conn, databaseService)
@@ -35,6 +37,8 @@ class MenuService:
 
     def NodeMenu(self):
         self.accountService.SignIn()
+        new_thread = Thread(target=self.serverService.recTransaction)
+        new_thread.start()
         self.notifications()
         menu = ConsoleMenu(f"Username: {self.accountService.username}","Menu for sign up in goodchain", exit_option_text="Log out")
         transfer_item = FunctionItem("Transfer Coins", self.transactionService.CreateNewTransactions, [self.accountService.userId, self.accountService.pvk])

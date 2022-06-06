@@ -10,6 +10,8 @@ from cryptography.hazmat.primitives.serialization import *
 
 from datetime import datetime
 
+from src.Services.ClientService import ClientService
+
 
 class TransactionService:
     conn: Connection
@@ -20,6 +22,7 @@ class TransactionService:
         self.databaseService = databaseService
         self.userRepo = UserRepo(self.conn)
         self.blockRepo = BlockRepo(conn)
+        self.clientService = ClientService()
 
     def CreateNewTransactions(self, senderId, pvk):
         global recieverUser
@@ -58,6 +61,7 @@ class TransactionService:
         signatureTransaction = self.transactionRepo.GetTransactionForSignature(transactionId[0])
         signature = self.sign(signatureTransaction, pvk)
         self.transactionRepo.UpdateTransactionSignature(transactionId, signature)
+        self.clientService.sendTransactions(self.transactionRepo.GetTransactionWithId(transactionId))
         self.databaseService.hashDatabase()
 
 

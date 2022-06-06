@@ -68,6 +68,19 @@ class TransactionRepo:
         return transactionModified
 
 
+    def GetTransactionWithId(self, transactionId):
+        sql_statement = f'''SELECT Sender, Receiver, TxValue, TxFee,TransactionSignature,FalseTransaction, Created, Modified FROM Transactions WHERE id = {transactionId}'''
+        try:
+            self.cur.execute(sql_statement)
+        except Error as e:
+            print(e)
+            return False
+        transaction = self.cur.fetchone()
+        transactionModified = (transaction[0], transaction[1], float(transaction[2]), float(transaction[3]), transaction[4], transaction[5], transaction[6], transaction[7])
+        return transactionModified
+
+
+
 
     def GetUserTransactions(self, userId):
         sql_statement = 'SELECT T.* from Transactions T ' \

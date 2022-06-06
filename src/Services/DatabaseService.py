@@ -31,6 +31,7 @@ class DatabaseService:
             databaseRepo.create_tables()
             userRepo = UserRepo(self.conn)
             transactionRepo = TransactionRepo(self.conn)
+
             if not userRepo.GetUserIdWithUserName('FundingUser'):
                 privateIn = rsa.generate_private_key(public_exponent=65537, key_size=2048)
                 private_key = privateIn.private_bytes(
