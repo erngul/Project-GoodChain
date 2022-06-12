@@ -72,6 +72,15 @@ class UserRepo:
             return False
         return self.cur.fetchone()
 
+    def GetUserWithUserId(self, userId):
+        sql_statement = 'SELECT UserName, Password, PrivateKey, PublicKey, LastLogin from User WHERE Id=:Id'
+        try:
+            self.cur.execute(sql_statement, {"Id": userId})
+        except Error as e:
+            print(e)
+            return False
+        return self.cur.fetchone()
+
 
     def updateUserLastLogin(self, userId):
         try:
@@ -100,3 +109,22 @@ class UserRepo:
             print(e)
             return False
         return self.cur.fetchone()
+
+    def RemoveUserWithId(self, id):
+        sql_statement = '''DELETE FROM User WHERE Id = ?'''
+        try:
+            self.cur.execute(sql_statement, (id, ))
+            self.conn.commit()
+        except Error as e:
+            print(e)
+            return False
+
+    def addUser(self, user):
+        sql_statement = '''INSERT INTO USER (UserName, Password, PrivateKey, PublicKey, LastLogin) VALUES(?,?,?,?,?,?)'''
+        values_to_insert = (user[0], user[1], user[2], user[3], user[4], user[5])
+        try:
+            self.cur.execute(sql_statement, values_to_insert)
+            self.conn.commit()
+            print('Transaction has been added.')
+        except Error as e:
+            print(e)

@@ -69,7 +69,7 @@ class TransactionRepo:
 
 
     def GetTransactionWithId(self, transactionId):
-        sql_statement = f'''SELECT Sender, Receiver, TxValue, TxFee,TransactionSignature,FalseTransaction, Created, Modified FROM Transactions WHERE id = {transactionId}'''
+        sql_statement = 'SELECT Sender, Receiver, TxValue, TxFee,TransactionSignature,FalseTransaction, Created, Modified FROM Transactions WHERE id =  2 '
         try:
             self.cur.execute(sql_statement)
         except Error as e:
@@ -202,3 +202,23 @@ class TransactionRepo:
         except Error as e:
             print(e)
             return False
+
+    def removeTransactionWithId(self, id):
+        sql_statement = '''DELETE FROM Transactions WHERE Id = ?'''
+        try:
+            self.cur.execute(sql_statement, (id, ))
+            self.conn.commit()
+        except Error as e:
+            print(e)
+            return False
+
+
+    def addTransaction(self, transaction):
+        sql_statement = '''INSERT INTO Transactions (Sender, Receiver, TxValue, TxFee,TransactionSignature,FalseTransaction, Created, Modified) VALUES(?,?,?,?,?,?,?,?)'''
+        values_to_insert = (transaction[0], transaction[1], transaction[2], transaction[3], transaction[4], transaction[5], transaction[6], transaction[7])
+        try:
+            self.cur.execute(sql_statement, values_to_insert)
+            self.conn.commit()
+            print('Transaction has been added.')
+        except Error as e:
+            print(e)

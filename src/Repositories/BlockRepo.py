@@ -152,3 +152,46 @@ class BlockRepo:
             print(e)
             return False
         return minedBlock, correctBlocks, falseBlocks
+
+
+    def addBlock(self, block):
+        sql_statement = '''INSERT INTO Block (BlockHash, BlockNonce, TransactionData, MinedUserId, PreviousBlockId, Verified, Pending, Modified, Created) VALUES(?,?,?,?,?,?,?,?,?)'''
+        values_to_insert = (block[0], block[1], block[2], block[3], block[4], block[5], block[6], block[7], block[8])
+        try:
+            self.cur.execute(sql_statement, values_to_insert)
+            self.conn.commit()
+            print('Transaction has been added.')
+        except Error as e:
+            print(e)
+
+    def GetBlockWithBlockId(self, blockId):
+        sql_statement = 'SELECT BlockHash, BlockNonce, TransactionData, MinedUserId, PreviousBlockId, Verified, Pending, Modified, Created from Block WHERE Id=:Id'
+        try:
+            self.cur.execute(sql_statement, {"Id": blockId})
+        except Error as e:
+            print(e)
+            return False
+        return self.cur.fetchone()
+
+
+    def RemoveUserWithId(self, id):
+        sql_statement = '''DELETE FROM Block WHERE Id = ?'''
+        try:
+            self.cur.execute(sql_statement, (id, ))
+            self.conn.commit()
+        except Error as e:
+            print(e)
+            return False
+
+    def GetLatestBlock(self):
+        sql_statement = 'SELECT Id FROM Block order by 1 desc'
+        try:
+            self.cur.execute(sql_statement)
+        except Error as e:
+            print(e)
+            return False
+        return self.cur.fetchone()
+
+
+
+    # TODO: Make the BlockCheck node part

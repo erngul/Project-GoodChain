@@ -14,15 +14,22 @@ class MenuService:
     accountService: UserService
 
     def __init__(self, databaseService):
-        self.serverService = ServerService()
         self.databaseService = databaseService
         self.conn = databaseService.conn
         self.accountService = UserService(self.conn, databaseService)
         self.transactionService = TransactionService(self.conn, databaseService)
         self.blockService = BlockService(self.conn, databaseService)
+        self.serverService = ServerService(self.transactionService, self.accountService, self.blockService)
 
     def publicMenu(self):
-
+        recTransaction = Thread(target=self.serverService.recTransactions)
+        recUser = Thread(target=self.serverService.recUser)
+        recBlock = Thread(target=self.serverService.recBlockchain)
+        recVerification = Thread(target=self.serverService.recBlockVerification)
+        recTransaction.start()
+        recUser.start()
+        recBlock.start()
+        recVerification.start()
         menu = ConsoleMenu("Public Menu", "Menu for sign up in goodchain")
 
 
@@ -37,8 +44,6 @@ class MenuService:
 
     def NodeMenu(self):
         self.accountService.SignIn()
-        new_thread = Thread(target=self.serverService.recTransaction)
-        new_thread.start()
         self.notifications()
         menu = ConsoleMenu(f"Username: {self.accountService.username}","Menu for sign up in goodchain", exit_option_text="Log out")
         transfer_item = FunctionItem("Transfer Coins", self.transactionService.CreateNewTransactions, [self.accountService.userId, self.accountService.pvk])

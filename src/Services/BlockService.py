@@ -58,6 +58,11 @@ class BlockService:
                     time.sleep(20-timeCount)
                 print('mining completed')
                 self.blockRepo.CreateBlock(currentHash, self.Nonce, minerId, data)
+                blockId = self.blockRepo.GetLatestBlock()
+                result = self.transactionService.clientService.sendObject(self.blockRepo.GetBlockWithBlockId(blockId))
+                if result == False:
+                    self.blockRepo.RemoveUserWithId(blockId)
+                    return
                 self.databaseService.hashDatabase()
                 return
 
@@ -118,6 +123,7 @@ class BlockService:
             print('block is has been verified by you. and is now been added to the blockChain')
             self.blockRepo.verifyBlock(1, block[0])
             self.transactionService.removeMinedTransactionsFromPool(data)
+            # TODO: Make the BlockCheck node part
         else:
             print('block is not correct')
             self.blockRepo.CreateNewBlockCheck(block[0], userId, 0)
