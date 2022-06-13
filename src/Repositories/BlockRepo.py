@@ -161,8 +161,10 @@ class BlockRepo:
             self.cur.execute(sql_statement, values_to_insert)
             self.conn.commit()
             print('Transaction has been added.')
+            return True
         except Error as e:
             print(e)
+            return False
 
     def GetBlockWithBlockId(self, blockId):
         sql_statement = 'SELECT BlockHash, BlockNonce, TransactionData, MinedUserId, PreviousBlockId, Verified, Pending, Modified, Created from Block WHERE Id=:Id'

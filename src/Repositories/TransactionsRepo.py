@@ -69,9 +69,9 @@ class TransactionRepo:
 
 
     def GetTransactionWithId(self, transactionId):
-        sql_statement = 'SELECT Sender, Receiver, TxValue, TxFee,TransactionSignature,FalseTransaction, Created, Modified FROM Transactions WHERE id =  2 '
+        sql_statement = 'SELECT Sender, Receiver, TxValue, TxFee,TransactionSignature,FalseTransaction, Created, Modified FROM Transactions WHERE id=:id'
         try:
-            self.cur.execute(sql_statement)
+            self.cur.execute(sql_statement, {"id": transactionId})
         except Error as e:
             print(e)
             return False
@@ -220,5 +220,7 @@ class TransactionRepo:
             self.cur.execute(sql_statement, values_to_insert)
             self.conn.commit()
             print('Transaction has been added.')
+            return True
         except Error as e:
             print(e)
+            return False

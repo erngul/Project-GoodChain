@@ -12,15 +12,16 @@ class ClientService:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((self.TCP_IP, tcpPort))
             s.send(pickle.dumps(transaction))
+            # s.setblocking(False)
             data = s.recv(self.BUFFER_SIZE)
-            if str(data, 'utf-8') == '1':
-                print('Transaction successfully added to other node')
+            if data == b'1':
+                print('item successfully added to other node')
                 s.close()
                 return True
             else:
-                print('Transaction failed to add to an other node and will be removed from the pool.')
+                print('item failed to add to the other node and will be removed.0')
                 s.close()
                 return False
         except:
-            print('Transaction failed to add to an other node and will be removed from the pool.')
+            print('item failed to add to the other node and will be removed.1')
             return False

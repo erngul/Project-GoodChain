@@ -59,7 +59,7 @@ class BlockService:
                 print('mining completed')
                 self.blockRepo.CreateBlock(currentHash, self.Nonce, minerId, data)
                 blockId = self.blockRepo.GetLatestBlock()
-                result = self.transactionService.clientService.sendObject(self.blockRepo.GetBlockWithBlockId(blockId))
+                result = self.transactionService.clientService.sendObject(self.blockRepo.GetBlockWithBlockId(blockId), 1235)
                 if result == False:
                     self.blockRepo.RemoveUserWithId(blockId)
                     return

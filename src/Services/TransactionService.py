@@ -61,7 +61,7 @@ class TransactionService:
         signatureTransaction = self.transactionRepo.GetTransactionForSignature(transactionId[0])
         signature = self.sign(signatureTransaction, pvk)
         self.transactionRepo.UpdateTransactionSignature(transactionId, signature)
-        result = self.clientService.sendObject(self.transactionRepo.GetTransactionWithId(transactionId), 1233)
+        result = self.clientService.sendObject(self.transactionRepo.GetTransactionWithId(transactionId[0]), 1233)
         if result == False:
             self.transactionRepo.removeTransactionWithId(transactionId)
         self.databaseService.hashDatabase()

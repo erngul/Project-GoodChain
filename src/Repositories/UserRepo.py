@@ -120,11 +120,13 @@ class UserRepo:
             return False
 
     def addUser(self, user):
-        sql_statement = '''INSERT INTO USER (UserName, Password, PrivateKey, PublicKey, LastLogin) VALUES(?,?,?,?,?,?)'''
-        values_to_insert = (user[0], user[1], user[2], user[3], user[4], user[5])
+        sql_statement = '''INSERT INTO USER (UserName, Password, PrivateKey, PublicKey, LastLogin) VALUES(?,?,?,?,?)'''
+        values_to_insert = (user[0], user[1], user[2], user[3], user[4])
         try:
             self.cur.execute(sql_statement, values_to_insert)
             self.conn.commit()
             print('Transaction has been added.')
+            return True
         except Error as e:
             print(e)
+            return False

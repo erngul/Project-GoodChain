@@ -43,9 +43,9 @@ class UserService:
 
                 self.userRepo.CreateUser(userName, digest.finalize(), public_key, private_key)
                 userId = self.userRepo.GetUserIdWithUserName(userName)[0]
-                userResult = self.transactionService.clientService.sendObject(self.userRepo.GetUserWithUserId(userId))
+                userResult = self.transactionService.clientService.sendObject(self.userRepo.GetUserWithUserId(userId), 1234)
                 if userResult == False:
-                    self.userRepo.RemoveUserWithId(transactionId)
+                    self.userRepo.RemoveUserWithId(userId)
                     return
                 transactionRepo = TransactionRepo(self.conn)
                 PrivateFunderUser = self.userRepo.GetPrivateKeyWithUserId(1)[0]
@@ -54,7 +54,7 @@ class UserService:
                 signatureTransaction = transactionRepo.GetTransactionForSignature(transactionId[0])
                 signature = self.transactionService.sign(signatureTransaction, PrivateFunderUser)
                 transactionRepo.UpdateTransactionSignature(transactionId, signature)
-                transactionResult = self.transactionService.clientService.sendTransactions(self.transactionService.transactionRepo.GetTransactionWithId(transactionId))
+                transactionResult = self.transactionService.clientService.sendObject(self.transactionService.transactionRepo.GetTransactionWithId(transactionId[0]), 1233)
                 if transactionResult == False:
                     self.transactionService.transactionRepo.removeTransactionWithId(transactionId)
                 self.databaseService.hashDatabase()
