@@ -26,10 +26,12 @@ class MenuService:
         recUser = Thread(target=self.serverService.recUser)
         recBlock = Thread(target=self.serverService.recBlockchain)
         recVerification = Thread(target=self.serverService.recBlockVerification)
+        recDeleteTransaction = Thread(target=self.serverService.deleteTransaction)
         recTransaction.start()
         recUser.start()
         recBlock.start()
         recVerification.start()
+        recDeleteTransaction.start()
         menu = ConsoleMenu("Public Menu", "Menu for sign up in goodchain")
 
 
@@ -49,7 +51,7 @@ class MenuService:
         transfer_item = FunctionItem("Transfer Coins", self.transactionService.CreateNewTransactions, [self.accountService.userId, self.accountService.pvk])
         etb_item = FunctionItem("Explore the Chain", self.blockService.exploreTheChains)
         ctp_item = FunctionItem("Check the Pool", self.transactionService.checkThePool)
-        cancel_item = FunctionItem("Cancel a transaction", self.transactionService.cancelTransaction, [self.accountService.userId])
+        cancel_item = FunctionItem("Cancel a transaction", self.transactionService.cancelUserTransaction, [self.accountService.userId])
         mine_item = FunctionItem("Mine a Block", self.blockService.mine, [self.accountService.userId])
         account_balance = FunctionItem("See account balance", self.transactionService.CalculateUserBalacne, [self.accountService.userId])
         public_key = FunctionItem("see public Key", self.accountService.PrintPublicKey)

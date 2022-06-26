@@ -123,6 +123,7 @@ class BlockService:
             print('block is has been verified by you. and is now been added to the blockChain')
             self.blockRepo.verifyBlock(1, block[0])
             self.transactionService.removeMinedTransactionsFromPool(data)
+            self.transactionService.clientService.sendObject((data[0], userId), 1236)
             # TODO: Make the BlockCheck node part
         else:
             print('block is not correct')
@@ -130,6 +131,14 @@ class BlockService:
             print('block has been falsley verified by 3 nodes! and is now been removed. The remaining correct transactions will remain in the pool.')
             self.blockRepo.verifyBlock(0, block[0])
         self.databaseService.hashDatabase()
+
+    def addBlockVerification(self, data):
+        userId = data[1]
+        block = self.blockRepo.GetBlockById(data[0])
+        self.blockRepo.CreateNewBlockCheck(block[0], userId, 1)
+        print(f'block is has been verified by {self.userRepo.GetUserNameWithUserId(data[1])[0]}. and is now been added to the blockChain')
+        self.blockRepo.verifyBlock(1, block[0])
+        self.transactionService.removeMinedTransactionsFromPool(data)
 
     def exploreTheChains(self):
         blocks = self.blockRepo.GetAllVerifiedBlocks()

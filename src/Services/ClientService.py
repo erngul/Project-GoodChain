@@ -4,7 +4,7 @@ import time
 class ClientService:
 
     def __init__(self):
-        self.TCP_IP = '172.23.216.147'
+        self.TCP_IP = '172.28.21.243'
         self.BUFFER_SIZE = 1024
 
     def sendObject(self, transaction, tcpPort):

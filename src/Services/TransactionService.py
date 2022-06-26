@@ -117,19 +117,23 @@ class TransactionService:
                     input('Press enter to continue')
 
 
-    def cancelTransaction(self, userId):
+    def cancelUserTransaction(self, userId):
         transactions = self.transactionRepo.getCancalableTransaction(userId)
-        if transactions is not None and len(transactions) > 0:
+        if transactions is not False and len(transactions) > 0:
             transactionsIdList = []
             for t in transactions:
                 transactionsIdList.append(t[0])
-                print(f'Transaction id {t[0]} from {self.userRepo.GetUserNameWithUserId(t[1])[0]} to account {self.userRepo.GetUserNameWithUserId(t[2])[0]} has send {t[3]} amount with {t[4]} fee and has been created on {t[8]} and modified on {t[9]}')
+                print(f'Transaction id {t[0]} from {self.userRepo.GetUserNameWithUserId(t[1])[0]} to account {self.userRepo.GetUserNameWithUserId(t[2])[0]} has send {t[3]} amount with {t[4]} fee and has been created on {t[7]} and modified on {t[8]}')
             condition = True
             while condition:
                 selectedTransactionId = input('Please insert the transaction id for the transaction you want to cancel: ')
                 if int(selectedTransactionId) in transactionsIdList:
                     condition = False
-                    self.transactionRepo.cancelTransaction(selectedTransactionId)
+                    result = self.clientService.sendObject(selectedTransactionId, 1237)
+                    if result == True:
+                        self.transactionRepo.cancelTransaction(selectedTransactionId)
+                    else:
+                        print("No other node online, transaction not deleted try again later")
                 else:
                     print('The selected id is not correct please try again.')
 

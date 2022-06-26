@@ -152,7 +152,7 @@ class TransactionRepo:
 
 
     def getCancalableTransaction(self, userId):
-        sql_statement = '''select T.* from Transactions T where FalseTransaction = 0'''
+        sql_statement = '''select T.* from Transactions T where FalseTransaction = 0 and Sender =:userId'''
         try:
             self.cur.execute(sql_statement, {"userId": userId})
             return self.cur.fetchall()
