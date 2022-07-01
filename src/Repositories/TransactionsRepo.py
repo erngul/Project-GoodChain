@@ -137,8 +137,10 @@ class TransactionRepo:
             self.cur.execute(sql_statement)
             self.conn.commit()
             print('FalseTransaction has been updated.')
+            return True
         except Error as e:
             print(e)
+            return False
 
 
     def GetFalseTransactionsByUserId(self, userId):

@@ -27,11 +27,15 @@ class MenuService:
         recBlock = Thread(target=self.serverService.recBlockchain)
         recVerification = Thread(target=self.serverService.recBlockVerification)
         recDeleteTransaction = Thread(target=self.serverService.deleteTransaction)
+        recFalseTransaction = Thread(target=self.serverService.flagTransaction)
+        sendFunderUser = Thread(target=self.serverService.sendFunderUser)
         recTransaction.start()
         recUser.start()
         recBlock.start()
         recVerification.start()
         recDeleteTransaction.start()
+        recFalseTransaction.start()
+        sendFunderUser.start()
         menu = ConsoleMenu("Public Menu", "Menu for sign up in goodchain")
 
 

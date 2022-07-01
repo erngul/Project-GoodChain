@@ -53,7 +53,7 @@ class BlockService:
                 currentHash = digest
                 end = time.time()
                 timeCount = end - start
-                if(timeCount < 20):
+                if(timeCount < 10):
                     print('mining...')
                     time.sleep(20-timeCount)
                 print('mining completed')
@@ -61,7 +61,8 @@ class BlockService:
                 blockId = self.blockRepo.GetLatestBlock()
                 result = self.transactionService.clientService.sendObject(self.blockRepo.GetBlockWithBlockId(blockId), 1235)
                 if result == False:
-                    self.blockRepo.RemoveUserWithId(blockId)
+                    print('block failed to add to node block will be removed.')
+                    self.blockRepo.RemoveBlockWithId(blockId[0])
                     return
                 self.databaseService.hashDatabase()
                 return
@@ -101,7 +102,7 @@ class BlockService:
         minedBlock, correcrtBlocks, falseBlocks = self.blockRepo.GetMinedBlockStatus(account.userId)
         if minedBlock is None:
             return
-        print(f'Your mined block for poolid: {minedBlock[3]} has {correcrtBlocks} correct verifications and {falseBlocks} incorrect verifications!')
+        print(f'Your mined block with id: {minedBlock[0]} has {correcrtBlocks} correct verifications and {falseBlocks} incorrect verifications!')
 
 
     def verifyBlock(self, block, userId):
@@ -119,44 +120,59 @@ class BlockService:
             digest += str(previousBlockHash)
         digest = sha256(digest)
         if digest == block[1] and len(falseTransactions) == 0:
-            self.blockRepo.CreateNewBlockCheck(block[0], userId, 1)
-            print('block is has been verified by you. and is now been added to the blockChain')
-            self.blockRepo.verifyBlock(1, block[0])
-            self.transactionService.removeMinedTransactionsFromPool(data)
-            self.transactionService.clientService.sendObject((data[0], userId), 1236)
+            result = self.transactionService.clientService.sendObject((block[0], userId, 1), 1236)
+            if result:
+                print('block is has been verified by you. and is now been added to the blockChain')
+                self.blockRepo.CreateNewBlockCheck(block[0], userId, 1)
+                self.blockRepo.verifyBlock(1, block[0])
+                self.transactionService.removeMinedTransactionsFromPool(data)
+            else:
+                print('No other node online please try again when a node is online.')
+
             # TODO: Make the BlockCheck node part
         else:
             print('block is not correct')
-            self.blockRepo.CreateNewBlockCheck(block[0], userId, 0)
-            print('block has been falsley verified by 3 nodes! and is now been removed. The remaining correct transactions will remain in the pool.')
-            self.blockRepo.verifyBlock(0, block[0])
+            result = self.transactionService.clientService.sendObject((block[0], userId, 0), 1236)
+            if result:
+                self.blockRepo.CreateNewBlockCheck(block[0], userId, 0)
+                self.blockRepo.verifyBlock(0, block[0])
+                print('block has been falsley verified! and is now been removed.')
+            else:
+                print('No other node online please try again when a node is online.')
         self.databaseService.hashDatabase()
 
     def addBlockVerification(self, data):
-        userId = data[1]
-        block = self.blockRepo.GetBlockById(data[0])
-        self.blockRepo.CreateNewBlockCheck(block[0], userId, 1)
-        print(f'block is has been verified by {self.userRepo.GetUserNameWithUserId(data[1])[0]}. and is now been added to the blockChain')
-        self.blockRepo.verifyBlock(1, block[0])
-        self.transactionService.removeMinedTransactionsFromPool(data)
+        try:
+            userId = data[1]
+            block = self.blockRepo.GetBlockById(data[0])
+            self.blockRepo.CreateNewBlockCheck(block[0], userId, data[2])
+            print(f'block is has been verified by {self.userRepo.GetUserNameWithUserId(data[1])[0]}. and is now been added to the blockChain')
+            self.blockRepo.verifyBlock(data[2], block[0])
+            self.transactionService.removeMinedTransactionsFromPool(block[3])
+            return True
+        except:
+            print("Failed to add blockverification from node")
+            return False
 
     def exploreTheChains(self):
         blocks = self.blockRepo.GetAllVerifiedBlocks()
         if blocks is None or len(blocks) == 0:
             print('There are no blocks in the blockchain right now.')
             return
+        count = 0
         for b in blocks:
-            print(f'Block number: {b[0]}')
-        poolSelection = input(f'Which block would you like to see?: ')
+            print(f'Block number: {count}')
+            count+=1
+        poolSelection = int(input(f'Which block would you like to see?: '))
+        count = 1
+        for t in pickle.loads(blocks[poolSelection][3]):
+            print(f'Transaction number {count} from {self.userRepo.GetUserNameWithUserId(t[0])[0]} to account {self.userRepo.GetUserNameWithUserId(t[1])[0]} has send {t[2]} amount with {t[3]} fee and has been created on {t[5]}')
+            count+=1
         # transactions = self.poolRepo.GetPoolTransactions(int(b[3]))
         count = 1
         # for t in transactions:
-        #     print(f'Transaction number {count} from {self.userRepo.GetUserNameWithUserId(t[1])[0]} to account {self.userRepo.GetUserNameWithUserId(t[2])[0]} has send {t[3]} amount with {t[4]} fee and has been created on {t[8]} and modified on {t[9]}')
         #     count+=1
         input('Continue? (press enter)')
-
-
-
 
 
 def sha256(message):

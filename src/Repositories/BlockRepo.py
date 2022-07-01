@@ -155,7 +155,7 @@ class BlockRepo:
 
 
     def addBlock(self, block):
-        sql_statement = '''INSERT INTO Block (BlockHash, BlockNonce, TransactionData, MinedUserId, PreviousBlockId, Verified, Pending, Modified, Created) VALUES(?,?,?,?,?,?,?,?,?)'''
+        sql_statement = '''INSERT INTO Block (BlockHash, BlockNonce, TransactionsData, MinedUserId, PreviousBlockId, Verified, Pending, Modified, Created) VALUES(?,?,?,?,?,?,?,?,?)'''
         values_to_insert = (block[0], block[1], block[2], block[3], block[4], block[5], block[6], block[7], block[8])
         try:
             self.cur.execute(sql_statement, values_to_insert)
@@ -167,16 +167,16 @@ class BlockRepo:
             return False
 
     def GetBlockWithBlockId(self, blockId):
-        sql_statement = 'SELECT BlockHash, BlockNonce, TransactionData, MinedUserId, PreviousBlockId, Verified, Pending, Modified, Created from Block WHERE Id=:Id'
+        sql_statement = '''SELECT BlockHash, BlockNonce, TransactionsData, MinedUserId, PreviousBlockId, Verified, Pending, Modified, Created from Block WHERE Id = :blockId'''
         try:
-            self.cur.execute(sql_statement, {"Id": blockId})
+            self.cur.execute(sql_statement, {"blockId": blockId[0]})
         except Error as e:
             print(e)
             return False
         return self.cur.fetchone()
 
 
-    def RemoveUserWithId(self, id):
+    def RemoveBlockWithId(self, id):
         sql_statement = '''DELETE FROM Block WHERE Id = ?'''
         try:
             self.cur.execute(sql_statement, (id, ))

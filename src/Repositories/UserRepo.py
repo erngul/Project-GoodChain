@@ -42,6 +42,16 @@ class UserRepo:
         except Error as e:
             print(e)
 
+    def CreateFundingUserFromHost(self, data):
+        sql_statement = '''INSERT INTO User (UserName, Password, PublicKey, PrivateKey) VALUES(?,?,?,?)'''
+        values_to_insert = (data[0], data[1], data[3], data[2])
+        try:
+            self.cur.execute(sql_statement, values_to_insert)
+            self.conn.commit()
+            print('Funding User has been added')
+        except Error as e:
+            print(e)
+
     def GetUserWithPassword(self, username, password):
 
         sql_statement = 'SELECT * from User WHERE username=:UserName AND password=:Password'

@@ -14,6 +14,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 import datetime
 
+from src.Services.ClientService import ClientService
 from src.Services.BlockService import BlockService
 
 
@@ -33,18 +34,24 @@ class DatabaseService:
             transactionRepo = TransactionRepo(self.conn)
 
             if not userRepo.GetUserIdWithUserName('FundingUser'):
-                privateIn = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-                private_key = privateIn.private_bytes(
-                    encoding=serialization.Encoding.PEM, format=serialization.PrivateFormat.TraditionalOpenSSL,
-                    encryption_algorithm=serialization.NoEncryption()
-                )
-                publicIn = privateIn.public_key()
-                public_key = publicIn.public_bytes(
-                    encoding=serialization.Encoding.PEM,
-                    format=serialization.PublicFormat.SubjectPublicKeyInfo)
-                userRepo.CreateFundingUser(private_key, public_key)
+                print("initializing!")
+                clientService = ClientService()
+                result = clientService.getFunderUserData()
+                if result !=None:
+                    userRepo.CreateFundingUserFromHost(result)
+                else:
+                    privateIn = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+                    private_key = privateIn.private_bytes(
+                        encoding=serialization.Encoding.PEM, format=serialization.PrivateFormat.TraditionalOpenSSL,
+                        encryption_algorithm=serialization.NoEncryption()
+                    )
+                    publicIn = privateIn.public_key()
+                    public_key = publicIn.public_bytes(
+                        encoding=serialization.Encoding.PEM,
+                        format=serialization.PublicFormat.SubjectPublicKeyInfo)
+                    userRepo.CreateFundingUser(private_key, public_key)
                 blockRepo = BlockService(self.conn, self)
-                blockRepo.mineGenisisBlock(pickle.dumps([(None,1,999999999999999999, 0,0, datetime.datetime.now(), datetime.datetime.now())]))
+                blockRepo.mineGenisisBlock(pickle.dumps([(None,1,999999999999999999, 0,0, '2022-06-26 23:09:53.012563', '2022-06-26 23:09:53.012563')]))
 
 
 

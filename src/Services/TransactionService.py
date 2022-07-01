@@ -157,7 +157,9 @@ class TransactionService:
         if float(transaction[2]) <= 0 or float(transaction[3]) < 0:
             falseTransaction = True
         if falseTransaction:
-            self.transactionRepo.setFalseTransaction(transaction[0])
+            result = self.clientService.sendObject(transaction[0], 1238)
+            if result:
+                self.transactionRepo.setFalseTransaction(transaction[0])
 
         # make transaction value and fee 0 and also flag
         return falseTransaction
